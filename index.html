@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
+<html lang="zh-TW"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -198,8 +196,8 @@
     <span class="app-title">📖 單字學習卡</span>
     <div class="topbar-right">
       <div class="sync-badge">
-        <div class="sync-dot" id="sync-dot"></div>
-        <span id="sync-label">連線中</span>
+        <div class="sync-dot saving" id="sync-dot"></div>
+        <span id="sync-label">推送中</span>
       </div>
     </div>
   </div>
@@ -212,49 +210,49 @@
   </div>
 
   <div class="mode-bar">
-    <button class="mode-btn active" onclick="setMode('all')" id="m-all">全部 (0)</button>
+    <button class="mode-btn active" onclick="setMode('all')" id="m-all">全部 (72)</button>
     <button class="mode-btn" onclick="setMode('review')" id="m-review">再複習 (0)</button>
     <button class="mode-btn" onclick="setMode('known')" id="m-known">已熟記 (0)</button>
   </div>
 
   <div class="stats-row">
-    <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">總計</div></div>
+    <div class="stat"><div class="stat-num" id="s-total">72</div><div class="stat-label">總計</div></div>
     <div class="stat"><div class="stat-num green" id="s-known">0</div><div class="stat-label">已熟記</div></div>
     <div class="stat"><div class="stat-num red" id="s-review">0</div><div class="stat-label">需複習</div></div>
   </div>
 
   <div class="progress-wrap">
-    <div class="progress-bar"><div class="progress-fill" id="bar" style="width:0%"></div></div>
-    <div class="counter-row"><span class="counter" id="counter">- / -</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="bar" style="width: 1.38889%;"></div></div>
+    <div class="counter-row"><span class="counter" id="counter">1 / 72</span></div>
   </div>
 
-  <div id="main-area">
+  <div id="main-area" style="display: block;">
     <div class="scene" id="scene">
       <div class="card" id="card">
         <div class="face front">
           <div class="word-row">
-            <div class="word-text" id="word">-</div>
+            <div class="word-text" id="word">frame</div>
             <button class="speak-btn" onclick="event.stopPropagation();speak('word')">
-              <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"></path></svg>
             </button>
           </div>
-          <div class="phonetic" id="phonetic"></div>
-          <div class="pos-badge" id="pos"></div>
+          <div class="phonetic" id="phonetic">us: /freɪm/</div>
+          <div class="pos-badge" id="pos">n.</div>
           <div class="flip-hint">點擊卡片翻面查看翻譯</div>
         </div>
         <div class="face back">
           <div class="back-inner">
             <div class="trans-row">
-              <div class="translation" id="trans">-</div>
+              <div class="translation" id="trans">時間範圍，框架</div>
               <button class="speak-btn" onclick="event.stopPropagation();speak('trans')">
-                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"></path></svg>
               </button>
             </div>
             <div class="divider"></div>
             <div class="ex-row">
-              <div class="example-sentence" id="ex"></div>
+              <div class="example-sentence" id="ex">You should only put things on your daily to-do list that you actually intend to do during this time frame.</div>
               <button class="speak-btn" onclick="event.stopPropagation();speak('ex')">
-                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"></path></svg>
               </button>
             </div>
           </div>
@@ -271,7 +269,7 @@
     </div>
   </div>
 
-  <div id="done-screen" class="done-screen">
+  <div id="done-screen" class="done-screen" style="display: none;">
     <div class="done-emoji">🎉</div>
     <div class="done-title">這輪學習完成！</div>
     <div class="done-sub" id="done-msg"></div>
@@ -294,7 +292,7 @@
     <div class="import-preview" id="import-preview"></div>
     <div class="modal-btns">
       <button class="modal-btn" onclick="closeImport()">取消</button>
-      <button class="modal-btn confirm" id="import-confirm-btn" onclick="confirmImport()" disabled>匯入</button>
+      <button class="modal-btn confirm" id="import-confirm-btn" onclick="confirmImport()" disabled="">匯入</button>
     </div>
   </div>
 </div>
@@ -308,23 +306,19 @@
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
       <div>
         <div style="font-size:12px;color:#888;margin-bottom:4px;">GitHub 用戶名</div>
-        <input id="gh-user" type="text" placeholder="例：qqder1026-dotcom"
-          style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
+        <input id="gh-user" type="text" placeholder="例：qqder1026-dotcom" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
       </div>
       <div>
         <div style="font-size:12px;color:#888;margin-bottom:4px;">Repository 名稱</div>
-        <input id="gh-repo" type="text" placeholder="例：flashcards"
-          style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
+        <input id="gh-repo" type="text" placeholder="例：flashcards" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
       </div>
       <div>
         <div style="font-size:12px;color:#888;margin-bottom:4px;">檔案路徑（通常是 index.html）</div>
-        <input id="gh-path" type="text" placeholder="index.html"
-          style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
+        <input id="gh-path" type="text" placeholder="index.html" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
       </div>
       <div>
         <div style="font-size:12px;color:#888;margin-bottom:4px;">Personal Access Token（github_pat_ 開頭）</div>
-        <input id="gh-token" type="password" placeholder="github_pat_..."
-          style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
+        <input id="gh-token" type="password" placeholder="github_pat_..." style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
         <div style="font-size:11px;color:#aaa;margin-top:4px;">⚠ Token 只存在你的裝置 localStorage，不會出現在網頁原始碼裡</div>
       </div>
     </div>
@@ -335,7 +329,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast show" id="toast">☁ 正在推送到 GitHub…</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
@@ -346,78 +340,510 @@ const POS_KEY      = 'flashcard_position_v1';
 const PROGRESS_KEY = 'flashcard_progress_v1';
 
 let ALL_CARDS = [
-  {word:"frame",ph:"us: /freɪm/",pos:"n.",trans:"時間範圍，框架",ex:"You should only put things on your daily to-do list that you actually intend to do during this time frame."},
-  {word:"tackle",ph:"us: /ˈtækəl/",pos:"v.",trans:"處理，應付",ex:"Maybe a list can help you feel productive during times when you aren't feeling like you can tackle anything else."},
-  {word:"eventually",ph:"us: /ɪˈven.tʃu.ə.li/",pos:"adv.",trans:"最終，最後",ex:"Now, of course, some of these things may become time sensitive eventually."},
-  {word:"unwieldy",ph:"us: /ʌnˈwiːldi/",pos:"adj.",trans:"笨重的，難以控制的",ex:"I know that sometimes a someday maybe list can start looking long and unwieldy."},
-  {word:"caught",ph:"us: /kɔt/",pos:"v.",trans:"被困住；陷入（get caught up with）",ex:"Don't get caught up with that particular question."},
-  {word:"particular",ph:"us: /pərˈtɪkjələr/",pos:"adj.",trans:"特定的，特別的",ex:"Don't get caught up with that particular question."},
-  {word:"commit",ph:"us: /kəˈmɪt/",pos:"v.",trans:"承諾，投入",ex:"You are not ready to commit to a certain date or commit to with 100% certainty."},
-  {word:"serve",ph:"us: /sɝːv/",pos:"v.",trans:"起…作用，有助於使…",ex:"These all serve to make the daily to-do list unusable."},
-  {word:"silverware",ph:"us: /ˈsɪlvərwer/",pos:"n.",trans:"銀器；餐具",ex:"Order replacement silverware — these all serve to make the daily to-do list unusable."},
-  {word:"garage",ph:"us: /ɡəˈrɑːʒ/",pos:"n.",trans:"車庫",ex:"Organize the garage or host a progressive party in the neighborhood."},
-  {word:"unusable",ph:"us: /ʌnˈjuːzəbəl/",pos:"adj.",trans:"無法使用的，不能用的",ex:"You can keep track of future things without making a regular to-do list unusable."},
-  {word:"score",ph:"us: /skɔr/",pos:"n.",trans:"樂譜",ex:"I'd like to think I am not burying my head in the score when I am singing with my choir."},
-  {word:"address",ph:"us: /əˈdres/",pos:"vt.",trans:"與…交談，向…講話",ex:"But many people do have to address other people at some point."},
-  {word:"swap",ph:"us: /swɑːp/",pos:"v.",trans:"交換",ex:"Or swap with a friend or relative to achieve the same thing."},
-  {word:"meditating",ph:"us: /ˈmedɪˌteɪtɪŋ/",pos:"v.",trans:"冥想，沉思",ex:"During that hour we are reading quality literature, writing a novel, or meditating."},
-  {word:"discretionary",ph:"us: /dɪˈskrɛʃənɛri/",pos:"adj.",trans:"可自由支配的",ex:"What people mean is an extra hour that is both discretionary — no boss, no family responsibilities."},
-  {word:"fold",ph:"us: /foʊld/",pos:"vt.",trans:"將…融入",ex:"We just fold the day into our usual routines and fill it with the usual stuff."},
-  {word:"ascertained",ph:"us: /ˌæsərˈteɪnd/",pos:"v.",trans:"確定，查明",ex:"As you have probably ascertained, looking at yourself and everyone around you, the answer is no."},
-  {word:"scoring",ph:"us: /ˈskɔːrɪŋ/",pos:"v.",trans:"獲得，賺取（時間）",ex:"That is the equivalent of scoring an extra hour in the day for more than half of a month."},
-  {word:"equivalent",ph:"us: /ɪˈkwɪvələnt/",pos:"adj.",trans:"等值的，相等的",ex:"That is the equivalent of scoring an extra hour in the day for more than half of a month."},
-  {word:"wisdom",ph:"us: /ˈwɪz.dəm/",pos:"n.",trans:"智慧；知識與見解",ex:"After I pause to note this astronomical wisdom, I also have a different thought."},
-  {word:"astronomical",ph:"us: /ˌæstrəˈnɑːmɪkl/",pos:"adj.",trans:"巨大的；天文學的",ex:"After I pause to note this astronomical wisdom, I also have a different thought."},
-  {word:"whiling",ph:"us: /ˈwaɪlɪŋ/",pos:"v.",trans:"消磨，打發（時間）",ex:"We are going to wind up whiling away time on our little devices."},
-  {word:"existences",ph:"us: /ɪɡˈzɪstənsɪz/",pos:"n.",trans:"生活，存在（複數）",ex:"There are some points in our ordinary daily existences when we wind up whiling away time."},
-  {word:"ordinary",ph:"us: /ˈɔːrdəneri/",pos:"adj.",trans:"平凡的，普通的",ex:"There are some points in our ordinary daily existences when we wind up whiling away time."},
-  {word:"mindless",ph:"us: /ˈmaɪndləs/",pos:"adj.",trans:"無意識的，漫無目的的",ex:"There are some points when we are going to be spending mindless time on our phones."},
-  {word:"cleanse",ph:"us: /klɛnz/",pos:"v.",trans:"清潔，淨化",ex:"One that is meant to clean and cleanse your skin without over-stripping your skin."},
-  {word:"meant",ph:"us: /mɛnt/",pos:"v.",trans:"意圖，旨在",ex:"One that is meant to clean and cleanse your skin without over-stripping your skin."},
-  {word:"drugstore",ph:"us: /ˈdrʌɡˌstɔr/",pos:"n.",trans:"藥房，藥妝店",ex:"And this is one that you can find at any drugstore."},
-  {word:"roll",ph:"us: /roʊl/",pos:"v.",trans:"順勢而為，應付困境",ex:"How do we roll with the punches?"},
-  {word:"bandaid",ph:"us: /ˈbændeɪd/",pos:"n.",trans:"創可貼；治標不治本的方法",ex:"Skincare with the crappiest diet is not great — you're just putting a bandaid, right?"},
-  {word:"crappiest",ph:"us: /ˈkræpiɪst/",pos:"adj.",trans:"最糟糕的，最差勁的",ex:"Skincare with the crappiest diet is not great. You're just putting a bandaid, right?"},
-  {word:"topically",ph:"us: /ˈtɑːpɪkli/",pos:"adv.",trans:"局部地；外用地",ex:"Eating carrots to no end won't give the same impact as a retinol you're applying topically."},
-  {word:"retinol",ph:"us: /ˈretɪˌnɔl/",pos:"n.",trans:"維生素A（護膚成分）",ex:"People eat carrots hoping to get the benefits of a retinol applied topically — it won't give the same impact."},
-  {word:"compound",ph:"us: /ˈkɑːm.paʊnd/",pos:"adj.",trans:"複合的；複利的",ex:"Sleep is like compound interest."},
-  {word:"misunderstood",ph:"us: /ˌmɪs.ʌn.dərˈstʊd/",pos:"adj.",trans:"被誤解的",ex:"The reason beauty sleep exists is for a reason, but I think it's misunderstood."},
-  {word:"underspoken",ph:"us: /ˌʌndərˈspoʊkən/",pos:"adj.",trans:"未被充分提及的",ex:"The most important habits that I think are underspoken of right."},
-  {word:"insecurities",ph:"us: /ˌɪnsɪˈkjʊrətiz/",pos:"n.",trans:"不安全感，缺乏自信",ex:"Find someone who's not going to feed off these insecurities or vulnerabilities."},
-  {word:"rooted",ph:"us: /ˈruːtɪd/",pos:"adj.",trans:"根深蒂固的，深層的",ex:"More often than not, it's a much deeper rooted issue that you're trying to get to."},
-  {word:"vulnerable",ph:"us: /ˈvʌlnərəbəl/",pos:"adj.",trans:"脆弱的，易受傷害的",ex:"That's where it's such a vulnerable state — you have to find someone you trust."},
-  {word:"approval",ph:"us: /əˈpruː.vəl/",pos:"n.",trans:"贊同，認可",ex:"If you're always pursuing other people's approval of how you look, you're pursuing something that doesn't exist."},
-  {word:"newsflash",ph:"us: /ˈnuːzˌflæʃ/",pos:"n.",trans:"突發新聞；提醒（帶諷刺意味）",ex:"I mean, newsflash, you've always looked like you."},
-  {word:"cherry",ph:"us: /ˈtʃeri/",pos:"n.",trans:"錦上添花（比喻額外優勢）",ex:"Your confidence is not dependent on how you look, but it's the cherry on top."},
-  {word:"consuming",ph:"us: /kənˈsuːmɪŋ/",pos:"v.",trans:"消耗；吞噬，支配",ex:"Caring enough to show up is fine — but it's not consuming who you are."},
-  {word:"dose",ph:"us: /doʊs/",pos:"n.",trans:"一點，少量",ex:"A healthy dose of vanity is like caring enough to show up and wear an ironed shirt."},
-  {word:"whereas",ph:"us: /ˌwerˈæz/",pos:"conj.",trans:"鑒於；而；反之",ex:"Whereas a healthy dose of vanity is like caring enough to wear an iron shirt instead of a wrinkled shirt."},
-  {word:"nothingness",ph:"us: /ˈnʌθɪŋnəs/",pos:"n.",trans:"虛無，空虛",ex:"You are chasing a never-ending nothingness, because it's just not something that's achievable."},
-  {word:"addiction",ph:"us: /əˈdɪkʃən/",pos:"n.",trans:"沉溺，成癮",ex:"Unhealthy vanity is when it constantly consumes your mental thoughts almost like an addiction."},
-  {word:"subjective",ph:"us: /sʌbˈdʒɛktɪv/",pos:"adj.",trans:"主觀的",ex:"So I'm going to give you my subjective perspective."},
-  {word:"extent",ph:"us: /ɪkˈstɛnt/",pos:"n.",trans:"程度；範圍",ex:"Being vain to a healthy and certain extent is just a reflection that you still care."},
-  {word:"screwed",ph:"us: /skruːd/",pos:"adj.",trans:"倒霉的，完蛋的",ex:"I sat out for decades in the sun and now I'm screwed."},
-  {word:"afterthought",ph:"us: /ˈæftərˌθɔːt/",pos:"n.",trans:"事後才想起的事；不重要的附加物",ex:"And yet it's an afterthought for so many."},
-  {word:"hormonal",ph:"us: /hɔːrˈmoʊnl/",pos:"adj.",trans:"荷爾蒙的",ex:"They're going through all kinds of hormonal changes and hear that your skin reflects what's going on inside."},
-  {word:"phase",ph:"us: /feɪz/",pos:"n.",trans:"階段，時期",ex:"The person is in a phase of their life where they're going through all kinds of hormonal changes."},
-  {word:"fascinating",ph:"us: /ˈfæsɪˌneɪtɪŋ/",pos:"adj.",trans:"令人著迷的，極有趣的",ex:"It's really something that I find fascinating because it's so visible."},
-  {word:"ringer",ph:"us: /ˈrɪŋər/",pos:"n.",trans:"嚴厲的考驗；折磨",ex:"And yet I put it through the ringer and I don't even care for it."},
-  {word:"vanity",ph:"us: /ˈvænəti/",pos:"n.",trans:"虛榮，虛妄",ex:"And skin is not just vanity."},
-  {word:"overlooked",ph:"us: /ˌoʊvərˈlʊkt/",pos:"adj.",trans:"被忽略的，被忽視的",ex:"One thing often so overlooked when it comes to skin health is the mental and emotional impact."},
-  {word:"standpoint",ph:"us: /ˈstændˌpɔɪnt/",pos:"n.",trans:"觀點，立場",ex:"Not just internally from a physiologic standpoint, but also mentally and emotionally."},
-  {word:"physiologic",ph:"us: /ˌfɪziəˈlɑːdʒɪk/",pos:"adj.",trans:"生理（學）的",ex:"Not just internally from a physiologic standpoint, but also on the inside, mentally and emotionally."},
-  {word:"reveal",ph:"us: /rɪˈviːl/",pos:"v.",trans:"揭示，透露",ex:"What does the state of your skin reveal about what's going on inside your body?"},
-  {word:"cumulative",ph:"us: /ˈkjuːmjələtɪv/",pos:"adj.",trans:"累積的",ex:"So 80% has to do with cumulative sun exposure."},
-  {word:"genetics",ph:"us: /dʒəˈnetɪks/",pos:"n.",trans:"遺傳因素；遺傳學",ex:"If it was all purely genetics, habits wouldn't matter."},
-  {word:"doable",ph:"us: /ˈduːəbəl/",pos:"adj.",trans:"可行的，能做到的",ex:"Making the complicated stuff simple and doable."},
-  {word:"misinformation",ph:"us: /ˌmɪsɪnfərˈmeɪʃən/",pos:"n.",trans:"錯誤信息，不實信息",ex:"Millions of followers trust her for calling out the misinformation."},
-  {word:"replenish",ph:"us: /rɪˈplenɪʃ/",pos:"v.",trans:"補充，恢復",ex:"People think collagen on a moisturizer will help replenish their collagen, but it's just a hydrating moisturizer."},
-  {word:"scrolling",ph:"us: /ˈskroʊlɪŋ/",pos:"v.",trans:"滑動瀏覽",ex:"The other day I was scrolling through social media and I'm not even kidding you."},
-  {word:"overwhelmed",ph:"us: /ˌoʊvərˈwɛlmd/",pos:"adj.",trans:"感到不知所措",ex:"I feel so overwhelmed about what to do, the way my skin is sagging, what products to buy."},
-  {word:"blossom",ph:"us: /ˈblɑːsəm/",pos:"v.",trans:"綻放，發展成更好的狀態",ex:"We can transform from an inside out perspective and really blossom into the butterflies that we are."},
-  {word:"irrational",ph:"us: /ɪˈræʃənəl/",pos:"adj.",trans:"不理性的，無理性的",ex:"She pointed out to me that this was an irrational pet peeve."},
-  {word:"accomplished",ph:"us: /əˈkɑːmplɪʃt/",pos:"adj.",trans:"有成就的，有造詣的",ex:"You've either got to choose a relaxing life or an accomplished one — I'm on a mission to prove that's not how it works."},
-  {word:"claim",ph:"us: /klem/",pos:"v.",trans:"聲稱，斷言",ex:"I'm not going to claim to be the best in the world at anything."},
+  {
+    "word": "frame",
+    "ph": "us: /freɪm/",
+    "pos": "n.",
+    "trans": "時間範圍，框架",
+    "ex": "You should only put things on your daily to-do list that you actually intend to do during this time frame."
+  },
+  {
+    "word": "tackle",
+    "ph": "us: /ˈtækəl/",
+    "pos": "v.",
+    "trans": "處理，應付",
+    "ex": "Maybe a list can help you feel productive during times when you aren't feeling like you can tackle anything else."
+  },
+  {
+    "word": "eventually",
+    "ph": "us: /ɪˈven.tʃu.ə.li/",
+    "pos": "adv.",
+    "trans": "最終，最後",
+    "ex": "Now, of course, some of these things may become time sensitive eventually."
+  },
+  {
+    "word": "unwieldy",
+    "ph": "us: /ʌnˈwiːldi/",
+    "pos": "adj.",
+    "trans": "笨重的，難以控制的",
+    "ex": "I know that sometimes a someday maybe list can start looking long and unwieldy."
+  },
+  {
+    "word": "caught",
+    "ph": "us: /kɔt/",
+    "pos": "v.",
+    "trans": "被困住；陷入（get caught up with）",
+    "ex": "Don't get caught up with that particular question."
+  },
+  {
+    "word": "particular",
+    "ph": "us: /pərˈtɪkjələr/",
+    "pos": "adj.",
+    "trans": "特定的，特別的",
+    "ex": "Don't get caught up with that particular question."
+  },
+  {
+    "word": "commit",
+    "ph": "us: /kəˈmɪt/",
+    "pos": "v.",
+    "trans": "承諾，投入",
+    "ex": "You are not ready to commit to a certain date or commit to with 100% certainty."
+  },
+  {
+    "word": "serve",
+    "ph": "us: /sɝːv/",
+    "pos": "v.",
+    "trans": "起…作用，有助於使…",
+    "ex": "These all serve to make the daily to-do list unusable."
+  },
+  {
+    "word": "silverware",
+    "ph": "us: /ˈsɪlvərwer/",
+    "pos": "n.",
+    "trans": "銀器；餐具",
+    "ex": "Order replacement silverware — these all serve to make the daily to-do list unusable."
+  },
+  {
+    "word": "garage",
+    "ph": "us: /ɡəˈrɑːʒ/",
+    "pos": "n.",
+    "trans": "車庫",
+    "ex": "Organize the garage or host a progressive party in the neighborhood."
+  },
+  {
+    "word": "unusable",
+    "ph": "us: /ʌnˈjuːzəbəl/",
+    "pos": "adj.",
+    "trans": "無法使用的，不能用的",
+    "ex": "You can keep track of future things without making a regular to-do list unusable."
+  },
+  {
+    "word": "score",
+    "ph": "us: /skɔr/",
+    "pos": "n.",
+    "trans": "樂譜",
+    "ex": "I'd like to think I am not burying my head in the score when I am singing with my choir."
+  },
+  {
+    "word": "address",
+    "ph": "us: /əˈdres/",
+    "pos": "vt.",
+    "trans": "與…交談，向…講話",
+    "ex": "But many people do have to address other people at some point."
+  },
+  {
+    "word": "swap",
+    "ph": "us: /swɑːp/",
+    "pos": "v.",
+    "trans": "交換",
+    "ex": "Or swap with a friend or relative to achieve the same thing."
+  },
+  {
+    "word": "meditating",
+    "ph": "us: /ˈmedɪˌteɪtɪŋ/",
+    "pos": "v.",
+    "trans": "冥想，沉思",
+    "ex": "During that hour we are reading quality literature, writing a novel, or meditating."
+  },
+  {
+    "word": "discretionary",
+    "ph": "us: /dɪˈskrɛʃənɛri/",
+    "pos": "adj.",
+    "trans": "可自由支配的",
+    "ex": "What people mean is an extra hour that is both discretionary — no boss, no family responsibilities."
+  },
+  {
+    "word": "fold",
+    "ph": "us: /foʊld/",
+    "pos": "vt.",
+    "trans": "將…融入",
+    "ex": "We just fold the day into our usual routines and fill it with the usual stuff."
+  },
+  {
+    "word": "ascertained",
+    "ph": "us: /ˌæsərˈteɪnd/",
+    "pos": "v.",
+    "trans": "確定，查明",
+    "ex": "As you have probably ascertained, looking at yourself and everyone around you, the answer is no."
+  },
+  {
+    "word": "scoring",
+    "ph": "us: /ˈskɔːrɪŋ/",
+    "pos": "v.",
+    "trans": "獲得，賺取（時間）",
+    "ex": "That is the equivalent of scoring an extra hour in the day for more than half of a month."
+  },
+  {
+    "word": "equivalent",
+    "ph": "us: /ɪˈkwɪvələnt/",
+    "pos": "adj.",
+    "trans": "等值的，相等的",
+    "ex": "That is the equivalent of scoring an extra hour in the day for more than half of a month."
+  },
+  {
+    "word": "wisdom",
+    "ph": "us: /ˈwɪz.dəm/",
+    "pos": "n.",
+    "trans": "智慧；知識與見解",
+    "ex": "After I pause to note this astronomical wisdom, I also have a different thought."
+  },
+  {
+    "word": "astronomical",
+    "ph": "us: /ˌæstrəˈnɑːmɪkl/",
+    "pos": "adj.",
+    "trans": "巨大的；天文學的",
+    "ex": "After I pause to note this astronomical wisdom, I also have a different thought."
+  },
+  {
+    "word": "whiling",
+    "ph": "us: /ˈwaɪlɪŋ/",
+    "pos": "v.",
+    "trans": "消磨，打發（時間）",
+    "ex": "We are going to wind up whiling away time on our little devices."
+  },
+  {
+    "word": "existences",
+    "ph": "us: /ɪɡˈzɪstənsɪz/",
+    "pos": "n.",
+    "trans": "生活，存在（複數）",
+    "ex": "There are some points in our ordinary daily existences when we wind up whiling away time."
+  },
+  {
+    "word": "ordinary",
+    "ph": "us: /ˈɔːrdəneri/",
+    "pos": "adj.",
+    "trans": "平凡的，普通的",
+    "ex": "There are some points in our ordinary daily existences when we wind up whiling away time."
+  },
+  {
+    "word": "mindless",
+    "ph": "us: /ˈmaɪndləs/",
+    "pos": "adj.",
+    "trans": "無意識的，漫無目的的",
+    "ex": "There are some points when we are going to be spending mindless time on our phones."
+  },
+  {
+    "word": "cleanse",
+    "ph": "us: /klɛnz/",
+    "pos": "v.",
+    "trans": "清潔，淨化",
+    "ex": "One that is meant to clean and cleanse your skin without over-stripping your skin."
+  },
+  {
+    "word": "meant",
+    "ph": "us: /mɛnt/",
+    "pos": "v.",
+    "trans": "意圖，旨在",
+    "ex": "One that is meant to clean and cleanse your skin without over-stripping your skin."
+  },
+  {
+    "word": "drugstore",
+    "ph": "us: /ˈdrʌɡˌstɔr/",
+    "pos": "n.",
+    "trans": "藥房，藥妝店",
+    "ex": "And this is one that you can find at any drugstore."
+  },
+  {
+    "word": "roll",
+    "ph": "us: /roʊl/",
+    "pos": "v.",
+    "trans": "順勢而為，應付困境",
+    "ex": "How do we roll with the punches?"
+  },
+  {
+    "word": "bandaid",
+    "ph": "us: /ˈbændeɪd/",
+    "pos": "n.",
+    "trans": "創可貼；治標不治本的方法",
+    "ex": "Skincare with the crappiest diet is not great — you're just putting a bandaid, right?"
+  },
+  {
+    "word": "crappiest",
+    "ph": "us: /ˈkræpiɪst/",
+    "pos": "adj.",
+    "trans": "最糟糕的，最差勁的",
+    "ex": "Skincare with the crappiest diet is not great. You're just putting a bandaid, right?"
+  },
+  {
+    "word": "topically",
+    "ph": "us: /ˈtɑːpɪkli/",
+    "pos": "adv.",
+    "trans": "局部地；外用地",
+    "ex": "Eating carrots to no end won't give the same impact as a retinol you're applying topically."
+  },
+  {
+    "word": "retinol",
+    "ph": "us: /ˈretɪˌnɔl/",
+    "pos": "n.",
+    "trans": "維生素A（護膚成分）",
+    "ex": "People eat carrots hoping to get the benefits of a retinol applied topically — it won't give the same impact."
+  },
+  {
+    "word": "compound",
+    "ph": "us: /ˈkɑːm.paʊnd/",
+    "pos": "adj.",
+    "trans": "複合的；複利的",
+    "ex": "Sleep is like compound interest."
+  },
+  {
+    "word": "misunderstood",
+    "ph": "us: /ˌmɪs.ʌn.dərˈstʊd/",
+    "pos": "adj.",
+    "trans": "被誤解的",
+    "ex": "The reason beauty sleep exists is for a reason, but I think it's misunderstood."
+  },
+  {
+    "word": "underspoken",
+    "ph": "us: /ˌʌndərˈspoʊkən/",
+    "pos": "adj.",
+    "trans": "未被充分提及的",
+    "ex": "The most important habits that I think are underspoken of right."
+  },
+  {
+    "word": "insecurities",
+    "ph": "us: /ˌɪnsɪˈkjʊrətiz/",
+    "pos": "n.",
+    "trans": "不安全感，缺乏自信",
+    "ex": "Find someone who's not going to feed off these insecurities or vulnerabilities."
+  },
+  {
+    "word": "rooted",
+    "ph": "us: /ˈruːtɪd/",
+    "pos": "adj.",
+    "trans": "根深蒂固的，深層的",
+    "ex": "More often than not, it's a much deeper rooted issue that you're trying to get to."
+  },
+  {
+    "word": "vulnerable",
+    "ph": "us: /ˈvʌlnərəbəl/",
+    "pos": "adj.",
+    "trans": "脆弱的，易受傷害的",
+    "ex": "That's where it's such a vulnerable state — you have to find someone you trust."
+  },
+  {
+    "word": "approval",
+    "ph": "us: /əˈpruː.vəl/",
+    "pos": "n.",
+    "trans": "贊同，認可",
+    "ex": "If you're always pursuing other people's approval of how you look, you're pursuing something that doesn't exist."
+  },
+  {
+    "word": "newsflash",
+    "ph": "us: /ˈnuːzˌflæʃ/",
+    "pos": "n.",
+    "trans": "突發新聞；提醒（帶諷刺意味）",
+    "ex": "I mean, newsflash, you've always looked like you."
+  },
+  {
+    "word": "cherry",
+    "ph": "us: /ˈtʃeri/",
+    "pos": "n.",
+    "trans": "錦上添花（比喻額外優勢）",
+    "ex": "Your confidence is not dependent on how you look, but it's the cherry on top."
+  },
+  {
+    "word": "consuming",
+    "ph": "us: /kənˈsuːmɪŋ/",
+    "pos": "v.",
+    "trans": "消耗；吞噬，支配",
+    "ex": "Caring enough to show up is fine — but it's not consuming who you are."
+  },
+  {
+    "word": "dose",
+    "ph": "us: /doʊs/",
+    "pos": "n.",
+    "trans": "一點，少量",
+    "ex": "A healthy dose of vanity is like caring enough to show up and wear an ironed shirt."
+  },
+  {
+    "word": "whereas",
+    "ph": "us: /ˌwerˈæz/",
+    "pos": "conj.",
+    "trans": "鑒於；而；反之",
+    "ex": "Whereas a healthy dose of vanity is like caring enough to wear an iron shirt instead of a wrinkled shirt."
+  },
+  {
+    "word": "nothingness",
+    "ph": "us: /ˈnʌθɪŋnəs/",
+    "pos": "n.",
+    "trans": "虛無，空虛",
+    "ex": "You are chasing a never-ending nothingness, because it's just not something that's achievable."
+  },
+  {
+    "word": "addiction",
+    "ph": "us: /əˈdɪkʃən/",
+    "pos": "n.",
+    "trans": "沉溺，成癮",
+    "ex": "Unhealthy vanity is when it constantly consumes your mental thoughts almost like an addiction."
+  },
+  {
+    "word": "subjective",
+    "ph": "us: /sʌbˈdʒɛktɪv/",
+    "pos": "adj.",
+    "trans": "主觀的",
+    "ex": "So I'm going to give you my subjective perspective."
+  },
+  {
+    "word": "extent",
+    "ph": "us: /ɪkˈstɛnt/",
+    "pos": "n.",
+    "trans": "程度；範圍",
+    "ex": "Being vain to a healthy and certain extent is just a reflection that you still care."
+  },
+  {
+    "word": "screwed",
+    "ph": "us: /skruːd/",
+    "pos": "adj.",
+    "trans": "倒霉的，完蛋的",
+    "ex": "I sat out for decades in the sun and now I'm screwed."
+  },
+  {
+    "word": "afterthought",
+    "ph": "us: /ˈæftərˌθɔːt/",
+    "pos": "n.",
+    "trans": "事後才想起的事；不重要的附加物",
+    "ex": "And yet it's an afterthought for so many."
+  },
+  {
+    "word": "hormonal",
+    "ph": "us: /hɔːrˈmoʊnl/",
+    "pos": "adj.",
+    "trans": "荷爾蒙的",
+    "ex": "They're going through all kinds of hormonal changes and hear that your skin reflects what's going on inside."
+  },
+  {
+    "word": "phase",
+    "ph": "us: /feɪz/",
+    "pos": "n.",
+    "trans": "階段，時期",
+    "ex": "The person is in a phase of their life where they're going through all kinds of hormonal changes."
+  },
+  {
+    "word": "fascinating",
+    "ph": "us: /ˈfæsɪˌneɪtɪŋ/",
+    "pos": "adj.",
+    "trans": "令人著迷的，極有趣的",
+    "ex": "It's really something that I find fascinating because it's so visible."
+  },
+  {
+    "word": "ringer",
+    "ph": "us: /ˈrɪŋər/",
+    "pos": "n.",
+    "trans": "嚴厲的考驗；折磨",
+    "ex": "And yet I put it through the ringer and I don't even care for it."
+  },
+  {
+    "word": "vanity",
+    "ph": "us: /ˈvænəti/",
+    "pos": "n.",
+    "trans": "虛榮，虛妄",
+    "ex": "And skin is not just vanity."
+  },
+  {
+    "word": "overlooked",
+    "ph": "us: /ˌoʊvərˈlʊkt/",
+    "pos": "adj.",
+    "trans": "被忽略的，被忽視的",
+    "ex": "One thing often so overlooked when it comes to skin health is the mental and emotional impact."
+  },
+  {
+    "word": "standpoint",
+    "ph": "us: /ˈstændˌpɔɪnt/",
+    "pos": "n.",
+    "trans": "觀點，立場",
+    "ex": "Not just internally from a physiologic standpoint, but also mentally and emotionally."
+  },
+  {
+    "word": "physiologic",
+    "ph": "us: /ˌfɪziəˈlɑːdʒɪk/",
+    "pos": "adj.",
+    "trans": "生理（學）的",
+    "ex": "Not just internally from a physiologic standpoint, but also on the inside, mentally and emotionally."
+  },
+  {
+    "word": "reveal",
+    "ph": "us: /rɪˈviːl/",
+    "pos": "v.",
+    "trans": "揭示，透露",
+    "ex": "What does the state of your skin reveal about what's going on inside your body?"
+  },
+  {
+    "word": "cumulative",
+    "ph": "us: /ˈkjuːmjələtɪv/",
+    "pos": "adj.",
+    "trans": "累積的",
+    "ex": "So 80% has to do with cumulative sun exposure."
+  },
+  {
+    "word": "genetics",
+    "ph": "us: /dʒəˈnetɪks/",
+    "pos": "n.",
+    "trans": "遺傳因素；遺傳學",
+    "ex": "If it was all purely genetics, habits wouldn't matter."
+  },
+  {
+    "word": "doable",
+    "ph": "us: /ˈduːəbəl/",
+    "pos": "adj.",
+    "trans": "可行的，能做到的",
+    "ex": "Making the complicated stuff simple and doable."
+  },
+  {
+    "word": "misinformation",
+    "ph": "us: /ˌmɪsɪnfərˈmeɪʃən/",
+    "pos": "n.",
+    "trans": "錯誤信息，不實信息",
+    "ex": "Millions of followers trust her for calling out the misinformation."
+  },
+  {
+    "word": "replenish",
+    "ph": "us: /rɪˈplenɪʃ/",
+    "pos": "v.",
+    "trans": "補充，恢復",
+    "ex": "People think collagen on a moisturizer will help replenish their collagen, but it's just a hydrating moisturizer."
+  },
+  {
+    "word": "scrolling",
+    "ph": "us: /ˈskroʊlɪŋ/",
+    "pos": "v.",
+    "trans": "滑動瀏覽",
+    "ex": "The other day I was scrolling through social media and I'm not even kidding you."
+  },
+  {
+    "word": "overwhelmed",
+    "ph": "us: /ˌoʊvərˈwɛlmd/",
+    "pos": "adj.",
+    "trans": "感到不知所措",
+    "ex": "I feel so overwhelmed about what to do, the way my skin is sagging, what products to buy."
+  },
+  {
+    "word": "blossom",
+    "ph": "us: /ˈblɑːsəm/",
+    "pos": "v.",
+    "trans": "綻放，發展成更好的狀態",
+    "ex": "We can transform from an inside out perspective and really blossom into the butterflies that we are."
+  },
+  {
+    "word": "irrational",
+    "ph": "us: /ɪˈræʃənəl/",
+    "pos": "adj.",
+    "trans": "不理性的，無理性的",
+    "ex": "She pointed out to me that this was an irrational pet peeve."
+  },
+  {
+    "word": "accomplished",
+    "ph": "us: /əˈkɑːmplɪʃt/",
+    "pos": "adj.",
+    "trans": "有成就的，有造詣的",
+    "ex": "You've either got to choose a relaxing life or an accomplished one — I'm on a mission to prove that's not how it works."
+  },
+  {
+    "word": "claim",
+    "ph": "us: /klem/",
+    "pos": "v.",
+    "trans": "聲稱，斷言",
+    "ex": "I'm not going to claim to be the best in the world at anything."
+  }
 ];
 
 let idx = 0, mode = 'all';
@@ -860,5 +1286,6 @@ function confirmImport() {
 // ── Init ───────────────────────────────────────────
 loadProgress();
 </script>
-</body>
-</html>
+
+
+</body></html>
