@@ -1,0 +1,1602 @@
+<html lang="zh-TW"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="單字學習卡">
+<title>單字學習卡</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    background: #F5F4F0;
+    min-height: 100vh;
+    padding: env(safe-area-inset-top, 16px) 0 env(safe-area-inset-bottom, 16px);
+  }
+  .container { max-width: 480px; margin: 0 auto; padding: 16px 16px 40px; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .app-title { font-size: 18px; font-weight: 600; color: #1a1a1a; letter-spacing: -0.3px; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .sync-badge {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: #666;
+    background: white; border: 1px solid #e0e0e0;
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; transition: background 0.3s; }
+  .sync-dot.ok { background: #1D9E75; }
+  .sync-dot.saving { background: #f0a000; animation: blink 0.8s infinite; }
+  .sync-dot.error { background: #e74c3c; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* toolbar row */
+  .toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tool-btn {
+    flex: 1; padding: 9px 6px; border-radius: 10px;
+    border: 1.5px solid #e0e0e0; background: white;
+    font-size: 12px; color: #555; cursor: pointer;
+    font-family: inherit; transition: all 0.15s; text-align: center;
+  }
+  .tool-btn:active { background: #f0f0f0; transform: scale(0.97); }
+  .tool-btn.import { border-color: #5DCAA5; color: #0F6E56; background: #E1F5EE; }
+  .tool-btn.save-html { border-color: #7EB3F0; color: #185FA5; background: #EAF3FB; }
+
+  /* Import modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); z-index: 100;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: white; border-radius: 18px; padding: 24px;
+    width: 100%; max-width: 420px; max-height: 80vh; overflow-y: auto;
+  }
+  .modal-title { font-size: 17px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: #888; margin-bottom: 16px; line-height: 1.6; }
+  .drop-zone {
+    border: 2px dashed #c0e0d0; border-radius: 12px;
+    padding: 28px; text-align: center; cursor: pointer;
+    background: #F8FDFB; margin-bottom: 14px; transition: all 0.15s;
+  }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: #1D9E75; background: #E8F8F2; }
+  .drop-zone-icon { font-size: 32px; margin-bottom: 8px; }
+  .drop-zone-text { font-size: 14px; color: #555; }
+  .drop-zone-hint { font-size: 12px; color: #aaa; margin-top: 4px; }
+  #pdf-input { display: none; }
+  .import-preview {
+    background: #F5F4F0; border-radius: 10px; padding: 12px;
+    margin-bottom: 14px; max-height: 200px; overflow-y: auto;
+    font-size: 12px; color: #555; line-height: 1.8; display: none;
+  }
+  .import-preview .new-word { color: #0F6E56; font-weight: 600; }
+  .import-preview .dup-word { color: #aaa; text-decoration: line-through; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btn {
+    flex: 1; padding: 12px; border-radius: 12px;
+    border: 1.5px solid #e0e0e0; background: white;
+    font-size: 14px; font-family: inherit; font-weight: 500;
+    cursor: pointer; color: #1a1a1a;
+  }
+  .modal-btn.confirm { background: #E1F5EE; border-color: #5DCAA5; color: #0F6E56; }
+  .modal-btn.confirm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .import-status { font-size: 13px; color: #888; text-align: center; margin-bottom: 10px; }
+
+  /* Mode tabs */
+  .mode-bar { display: flex; gap: 6px; margin-bottom: 12px; }
+  .mode-btn {
+    flex: 1; padding: 8px 4px; border-radius: 10px;
+    border: 1.5px solid #e0e0e0; background: white;
+    font-size: 12px; color: #888; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .mode-btn.active { background: #E1F5EE; border-color: #5DCAA5; color: #0F6E56; font-weight: 600; }
+
+  .stats-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .stat { flex: 1; background: white; border-radius: 12px; padding: 10px 8px; text-align: center; border: 1px solid #eee; }
+  .stat-num { font-size: 20px; font-weight: 600; color: #1a1a1a; }
+  .stat-num.green { color: #0F6E56; }
+  .stat-num.red { color: #993C1D; }
+  .stat-label { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+  .progress-wrap { margin-bottom: 6px; }
+  .progress-bar { height: 5px; background: #e8e8e8; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #1D9E75; border-radius: 3px; transition: width 0.4s ease; }
+  .counter-row { display: flex; justify-content: flex-end; margin-top: 4px; margin-bottom: 10px; }
+  .counter { font-size: 12px; color: #aaa; }
+
+  .scene { width: 100%; height: 280px; perspective: 1000px; cursor: pointer; margin-bottom: 14px; }
+  .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.52s cubic-bezier(.4,0,.2,1); }
+  .card.flipped { transform: rotateY(180deg); }
+  .face {
+    position: absolute; inset: 0; border-radius: 18px;
+    border: 1px solid #e8e8e8;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 1.5rem 1.75rem; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    text-align: center; gap: 6px;
+  }
+  .front { background: white; }
+  .back { background: #F0F5F3; transform: rotateY(180deg); }
+
+  .word-row { display: flex; align-items: center; gap: 10px; }
+  .word-text { font-size: 38px; font-weight: 600; color: #1a1a1a; letter-spacing: -1px; }
+  .phonetic { font-size: 13px; color: #aaa; letter-spacing: 0.3px; }
+  .pos-badge {
+    display: inline-block; font-size: 12px; font-weight: 600;
+    color: #185FA5; background: #EAF3FB;
+    padding: 3px 12px; border-radius: 20px;
+  }
+  .flip-hint { font-size: 12px; color: #ccc; margin-top: 6px; }
+
+  .back-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+  .trans-row { display: flex; align-items: center; gap: 10px; }
+  .translation { font-size: 22px; font-weight: 600; color: #0F6E56; line-height: 1.4; }
+  .divider { width: 40px; height: 1.5px; background: #ddd; border-radius: 2px; }
+  .ex-row { display: flex; align-items: flex-start; gap: 8px; width: 100%; }
+  .example-sentence { font-size: 15px; color: #444; line-height: 1.75; text-align: left; flex: 1; }
+
+  .speak-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid #e0e0e0; background: white;
+    cursor: pointer; flex-shrink: 0; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .speak-btn:active { background: #E1F5EE; border-color: #5DCAA5; transform: scale(0.92); }
+  .speak-btn svg { width: 14px; height: 14px; fill: #1D9E75; }
+
+  .btns { display: flex; gap: 10px; margin-bottom: 10px; }
+  .btn {
+    flex: 1; padding: 14px 0; border-radius: 14px;
+    border: 1.5px solid #e0e0e0; background: white;
+    font-size: 15px; font-family: inherit; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; color: #1a1a1a;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-again { color: #993C1D; border-color: #F0997B; background: #FEF3EF; }
+  .btn-again:active { background: #fde5dc; }
+  .btn-good { color: #0F6E56; border-color: #5DCAA5; background: #E1F5EE; }
+  .btn-good:active { background: #c8ede2; }
+
+  .nav-row { display: flex; gap: 10px; }
+  .nav-btn {
+    flex: 1; padding: 11px 0; border-radius: 12px;
+    border: 1.5px solid #e0e0e0; background: white;
+    font-size: 14px; font-family: inherit; color: #888;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .nav-btn:active { background: #f0f0f0; }
+
+  .done-screen { display: none; text-align: center; padding: 3rem 0; }
+  .done-emoji { font-size: 52px; margin-bottom: 12px; }
+  .done-title { font-size: 24px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
+  .done-sub { font-size: 14px; color: #888; margin-bottom: 24px; line-height: 1.8; }
+  .restart-btn {
+    padding: 13px 36px; border-radius: 14px;
+    border: 1.5px solid #e0e0e0; background: white;
+    font-size: 15px; font-family: inherit; font-weight: 500;
+    cursor: pointer; color: #1a1a1a;
+  }
+  .restart-btn:active { background: #f0f0f0; }
+
+  .toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #1a1a1a; color: white; font-size: 13px;
+    padding: 10px 20px; border-radius: 20px; opacity: 0;
+    transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <span class="app-title">📖 單字學習卡</span>
+    <div class="topbar-right">
+      <div class="sync-badge">
+        <div class="sync-dot saving" id="sync-dot"></div>
+        <span id="sync-label">推送中</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="tool-btn import" onclick="openImport()">＋ 匯入 PDF</button>
+    <button class="tool-btn save-html" onclick="pushToGitHub()">☁ 推送到 GitHub</button>
+    <button class="tool-btn" style="flex:0 0 auto;padding:9px 10px;border-color:#d0c0f0;color:#6B35B5;background:#F3EEFF;" onclick="openSettings()">⚙</button>
+  </div>
+
+  <div class="mode-bar">
+    <button class="mode-btn active" onclick="setMode('all')" id="m-all">全部 (115)</button>
+    <button class="mode-btn" onclick="setMode('review')" id="m-review">再複習 (0)</button>
+    <button class="mode-btn" onclick="setMode('known')" id="m-known">已熟記 (0)</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num" id="s-total">115</div><div class="stat-label">總計</div></div>
+    <div class="stat"><div class="stat-num green" id="s-known">0</div><div class="stat-label">已熟記</div></div>
+    <div class="stat"><div class="stat-num red" id="s-review">0</div><div class="stat-label">需複習</div></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="bar" style="width: 14.7826%;"></div></div>
+    <div class="counter-row"><span class="counter" id="counter">17 / 115</span></div>
+  </div>
+
+  <div id="main-area" style="display: block;">
+    <div class="scene" id="scene">
+      <div class="card" id="card">
+        <div class="face front">
+          <div class="word-row">
+            <div class="word-text" id="word">fold</div>
+            <button class="speak-btn" onclick="event.stopPropagation();speak('word')">
+              <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"></path></svg>
+            </button>
+          </div>
+          <div class="phonetic" id="phonetic">us: /foʊld/</div>
+          <div class="pos-badge" id="pos">vt.</div>
+          <div class="flip-hint">點擊卡片翻面查看翻譯</div>
+        </div>
+        <div class="face back">
+          <div class="back-inner">
+            <div class="trans-row">
+              <div class="translation" id="trans">將…融入</div>
+              <button class="speak-btn" onclick="event.stopPropagation();speak('trans')">
+                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"></path></svg>
+              </button>
+            </div>
+            <div class="divider"></div>
+            <div class="ex-row">
+              <div class="example-sentence" id="ex">We just fold the day into our usual routines and fill it with the usual stuff.</div>
+              <button class="speak-btn" onclick="event.stopPropagation();speak('ex')">
+                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"></path></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="btns">
+      <button class="btn btn-again" onclick="markCard(false)">🔁 再複習</button>
+      <button class="btn btn-good" onclick="markCard(true)">✓ 已熟記</button>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="prevCard()">← 上一張</button>
+      <button class="nav-btn" onclick="nextCard()">下一張 →</button>
+    </div>
+  </div>
+
+  <div id="done-screen" class="done-screen" style="display: none;">
+    <div class="done-emoji">🎉</div>
+    <div class="done-title">這輪學習完成！</div>
+    <div class="done-sub" id="done-msg"></div>
+    <button class="restart-btn" onclick="restart()">重新開始</button>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="import-modal">
+  <div class="modal">
+    <div class="modal-title">📄 匯入單字 PDF</div>
+    <div class="modal-sub">上傳你的 ListenLeap 單字本 PDF，會自動解析單字、翻譯和例句。已有的單字不會重複匯入。</div>
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('pdf-input').click()">
+      <div class="drop-zone-icon">📂</div>
+      <div class="drop-zone-text">點擊選擇 PDF 檔案</div>
+      <div class="drop-zone-hint">或將 PDF 拖曳到這裡</div>
+    </div>
+    <input type="file" id="pdf-input" accept=".pdf" onchange="handlePDFFile(this.files[0])">
+    <div class="import-status" id="import-status">找到 104 個單字：43 個新單字，61 個重複（略過）</div>
+    <div class="import-preview" id="import-preview" style="display: block;"><div><span class="new-word">＋ fascinated</span> — 被 ... 深深吸引；對 ... 著迷 ( 在這句話中指：我對人類經驗的多樣性以及我們如何度過時間</div><div><span class="new-word">＋ tight-knit</span> — 關係緊密的，聯繫緊密的</div><div><span class="new-word">＋ pushy</span> — 咄咄逼人的，過於強求的</div><div><span class="new-word">＋ incredibly</span> — 非常，極其</div><div><span class="new-word">＋ open-ended</span> — 开放式的，沒有固定答案的</div><div><span class="new-word">＋ racking</span> — 絞盡腦汁</div><div><span class="new-word">＋ tedious</span> — 乏味的，單調的</div><div><span class="new-word">＋ forge</span> — 建立，創造</div><div><span class="new-word">＋ straightforward</span> — 簡單明瞭的，坦率的</div><div><span class="new-word">＋ shallow</span> — 膚淺的，不深刻的</div><div><span class="new-word">＋ inevitably</span> — 不可避免地，必然地</div><div><span class="new-word">＋ dire</span> — 極其嚴重的；危急的</div><div><span class="new-word">＋ disruptive</span> — 擾亂性的，造成混亂的</div><div><span class="new-word">＋ tend</span> — 傾向於，往往會</div><div><span class="new-word">＋ session</span> — 一段時間，集會，會議。 在這句話中指： 一個持續數小時的工作時段 /</div><div><span class="new-word">＋ multi-hour</span> — 持續數小時的</div><div><span class="new-word">＋ displace</span> — 取代，排擠</div><div><span class="new-word">＋ slots</span> — 時間段，空檔</div><div><span class="new-word">＋ ahead</span> — 提前，預先</div><div><span class="new-word">＋ ListenLeap</span> — 無法使用的，不能用的</div><div><span class="new-word">＋ Solar</span> — 太陽的；這裡指「個人興趣」</div><div><span class="new-word">＋ ListenLeap</span> — 巨大的；天文學的</div><div><span class="new-word">＋ ListenLeap</span> — 意圖，旨在</div><div><span class="new-word">＋ mental</span> — 精神的；心理的</div><div><span class="new-word">＋ world-class</span> — 世界一流的，頂尖的</div><div><span class="new-word">＋ ado</span> — 騷擾；忙亂；麻煩。 在這句話中， ado 指的是「騷擾、忙亂」， without further ado 意為</div><div><span class="new-word">＋ instructor</span> — 講師</div><div><span class="new-word">＋ world-renowned</span> — 世界聞名的，在世界上享有盛譽的</div><div><span class="new-word">＋ drawers</span> — 抽屜</div><div><span class="new-word">＋ clogging</span> — 堵塞，阻塞</div><div><span class="new-word">＋ sagging</span> — 下垂的</div><div><span class="new-word">＋ acne</span> — 痤瘡，青春痘</div><div><span class="new-word">＋ sagging</span> — 下垂，鬆弛</div><div><span class="new-word">＋ glow</span> — 容光煥發，散發光彩</div><div><span class="new-word">＋ aging</span> — 抗衰老的，減緩衰老的</div><div><span class="new-word">＋ anti-aging</span> — 抗衰老</div><div><span class="new-word">＋ therapy</span> — 療法</div><div><span class="new-word">＋ perspective</span> — 觀點，角度</div><div><span class="new-word">＋ dermatologists</span> — 皮膚科醫生</div><div><span class="new-word">＋ collapse</span> — 開始有點崩潰</div><div><span class="new-word">＋ dramatic</span> — 戲劇性的，引人注目的</div><div><span class="new-word">＋ clinical</span> — 臨床的；在這裡指的是在醫院或診所實際操作、教學的。臨床助理教授；臨床講師</div><div><span class="new-word">＋ vouch</span> — 擔保，證明</div><div><span class="dup-word">frame</span> — 已存在</div><div><span class="dup-word">tackle</span> — 已存在</div><div><span class="dup-word">unwieldy</span> — 已存在</div><div><span class="dup-word">particular</span> — 已存在</div><div><span class="dup-word">commit</span> — 已存在</div><div><span class="dup-word">serve</span> — 已存在</div><div><span class="dup-word">garage</span> — 已存在</div><div><span class="dup-word">score</span> — 已存在</div><div><span class="dup-word">address</span> — 已存在</div><div><span class="dup-word">swap</span> — 已存在</div><div><span class="dup-word">meditating</span> — 已存在</div><div><span class="dup-word">discretionary</span> — 已存在</div><div><span class="dup-word">fold</span> — 已存在</div><div><span class="dup-word">ascertained</span> — 已存在</div><div><span class="dup-word">scoring</span> — 已存在</div><div><span class="dup-word">equivalent</span> — 已存在</div><div><span class="dup-word">whiling</span> — 已存在</div><div><span class="dup-word">existences</span> — 已存在</div><div><span class="dup-word">ordinary</span> — 已存在</div><div><span class="dup-word">mindless</span> — 已存在</div><div><span class="dup-word">cleanse</span> — 已存在</div><div><span class="dup-word">drugstore</span> — 已存在</div><div><span class="dup-word">roll</span> — 已存在</div><div><span class="dup-word">bandaid</span> — 已存在</div><div><span class="dup-word">crappiest</span> — 已存在</div><div><span class="dup-word">topically</span> — 已存在</div><div><span class="dup-word">retinol</span> — 已存在</div><div><span class="dup-word">compound</span> — 已存在</div><div><span class="dup-word">misunderstood</span> — 已存在</div><div><span class="dup-word">underspoken</span> — 已存在</div><div><span class="dup-word">rooted</span> — 已存在</div><div><span class="dup-word">vulnerable</span> — 已存在</div><div><span class="dup-word">approval</span> — 已存在</div><div><span class="dup-word">newsflash</span> — 已存在</div><div><span class="dup-word">cherry</span> — 已存在</div><div><span class="dup-word">consuming</span> — 已存在</div><div><span class="dup-word">Whereas</span> — 已存在</div><div><span class="dup-word">nothingness</span> — 已存在</div><div><span class="dup-word">addiction</span> — 已存在</div><div><span class="dup-word">subjective</span> — 已存在</div><div><span class="dup-word">screwed</span> — 已存在</div><div><span class="dup-word">afterthought</span> — 已存在</div><div><span class="dup-word">hormonal</span> — 已存在</div><div><span class="dup-word">phase</span> — 已存在</div><div><span class="dup-word">fascinating</span> — 已存在</div><div><span class="dup-word">ringer</span> — 已存在</div><div><span class="dup-word">vanity</span> — 已存在</div><div><span class="dup-word">overlooked</span> — 已存在</div><div><span class="dup-word">standpoint</span> — 已存在</div><div><span class="dup-word">physiologic</span> — 已存在</div><div><span class="dup-word">reveal</span> — 已存在</div><div><span class="dup-word">cumulative</span> — 已存在</div><div><span class="dup-word">genetics</span> — 已存在</div><div><span class="dup-word">doable</span> — 已存在</div><div><span class="dup-word">misinformation</span> — 已存在</div><div><span class="dup-word">replenish</span> — 已存在</div><div><span class="dup-word">scrolling</span> — 已存在</div><div><span class="dup-word">overwhelmed</span> — 已存在</div><div><span class="dup-word">blossom</span> — 已存在</div><div><span class="dup-word">accomplished</span> — 已存在</div><div><span class="dup-word">claim</span> — 已存在</div></div>
+    <div class="modal-btns">
+      <button class="modal-btn" onclick="closeImport()">取消</button>
+      <button class="modal-btn confirm" id="import-confirm-btn" onclick="confirmImport()">匯入</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <div class="modal-title">⚙ GitHub 設定</div>
+    <div class="modal-sub">設定後就能直接從瀏覽器推送 HTML 到 GitHub，不用手動下載上傳。Token 只存在你的裝置上。</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
+      <div>
+        <div style="font-size:12px;color:#888;margin-bottom:4px;">GitHub 用戶名</div>
+        <input id="gh-user" type="text" placeholder="例：qqder1026-dotcom" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
+      </div>
+      <div>
+        <div style="font-size:12px;color:#888;margin-bottom:4px;">Repository 名稱</div>
+        <input id="gh-repo" type="text" placeholder="例：flashcards" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
+      </div>
+      <div>
+        <div style="font-size:12px;color:#888;margin-bottom:4px;">檔案路徑（通常是 index.html）</div>
+        <input id="gh-path" type="text" placeholder="index.html" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
+      </div>
+      <div>
+        <div style="font-size:12px;color:#888;margin-bottom:4px;">Personal Access Token（ghp_ 開頭）</div>
+        <input id="gh-token" type="password" placeholder="ghp_..." style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;font-family:inherit;outline:none;">
+        <div style="font-size:11px;color:#aaa;margin-top:4px;">Token 只存在你的裝置 localStorage，不會傳給任何人</div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn" onclick="closeSettings()">取消</button>
+      <button class="modal-btn confirm" onclick="saveSettings()">儲存設定</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast show" id="toast">☁ 正在推送到 GitHub…</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbys9ZXlHd-Qi-YTtR04V7knj2lp9B4sYMEEC2dlT248w_CKx_Jx_H3kULzNLHutsECiqQ/exec';
+const LOCAL_KEY = 'flashcard_cards_v1';
+const POS_KEY   = 'flashcard_position_v1';
+
+let ALL_CARDS = [
+  {
+    "word": "frame",
+    "ph": "us: /freɪm/",
+    "pos": "n.",
+    "trans": "時間範圍，框架",
+    "ex": "You should only put things on your daily to-do list that you actually intend to do during this time frame."
+  },
+  {
+    "word": "tackle",
+    "ph": "us: /ˈtækəl/",
+    "pos": "v.",
+    "trans": "處理，應付",
+    "ex": "Maybe a list can help you feel productive during times when you aren't feeling like you can tackle anything else."
+  },
+  {
+    "word": "eventually",
+    "ph": "us: /ɪˈven.tʃu.ə.li/",
+    "pos": "adv.",
+    "trans": "最終，最後",
+    "ex": "Now, of course, some of these things may become time sensitive eventually."
+  },
+  {
+    "word": "unwieldy",
+    "ph": "us: /ʌnˈwiːldi/",
+    "pos": "adj.",
+    "trans": "笨重的，難以控制的",
+    "ex": "I know that sometimes a someday maybe list can start looking long and unwieldy."
+  },
+  {
+    "word": "caught",
+    "ph": "us: /kɔt/",
+    "pos": "v.",
+    "trans": "被困住；陷入（get caught up with）",
+    "ex": "Don't get caught up with that particular question."
+  },
+  {
+    "word": "particular",
+    "ph": "us: /pərˈtɪkjələr/",
+    "pos": "adj.",
+    "trans": "特定的，特別的",
+    "ex": "Don't get caught up with that particular question."
+  },
+  {
+    "word": "commit",
+    "ph": "us: /kəˈmɪt/",
+    "pos": "v.",
+    "trans": "承諾，投入",
+    "ex": "You are not ready to commit to a certain date or commit to with 100% certainty."
+  },
+  {
+    "word": "serve",
+    "ph": "us: /sɝːv/",
+    "pos": "v.",
+    "trans": "起…作用，有助於使…",
+    "ex": "These all serve to make the daily to-do list unusable."
+  },
+  {
+    "word": "silverware",
+    "ph": "us: /ˈsɪlvərwer/",
+    "pos": "n.",
+    "trans": "銀器；餐具",
+    "ex": "Order replacement silverware — these all serve to make the daily to-do list unusable."
+  },
+  {
+    "word": "garage",
+    "ph": "us: /ɡəˈrɑːʒ/",
+    "pos": "n.",
+    "trans": "車庫",
+    "ex": "Organize the garage or host a progressive party in the neighborhood."
+  },
+  {
+    "word": "unusable",
+    "ph": "us: /ʌnˈjuːzəbəl/",
+    "pos": "adj.",
+    "trans": "無法使用的，不能用的",
+    "ex": "You can keep track of future things without making a regular to-do list unusable."
+  },
+  {
+    "word": "score",
+    "ph": "us: /skɔr/",
+    "pos": "n.",
+    "trans": "樂譜",
+    "ex": "I'd like to think I am not burying my head in the score when I am singing with my choir."
+  },
+  {
+    "word": "address",
+    "ph": "us: /əˈdres/",
+    "pos": "vt.",
+    "trans": "與…交談，向…講話",
+    "ex": "But many people do have to address other people at some point."
+  },
+  {
+    "word": "swap",
+    "ph": "us: /swɑːp/",
+    "pos": "v.",
+    "trans": "交換",
+    "ex": "Or swap with a friend or relative to achieve the same thing."
+  },
+  {
+    "word": "meditating",
+    "ph": "us: /ˈmedɪˌteɪtɪŋ/",
+    "pos": "v.",
+    "trans": "冥想，沉思",
+    "ex": "During that hour we are reading quality literature, writing a novel, or meditating."
+  },
+  {
+    "word": "discretionary",
+    "ph": "us: /dɪˈskrɛʃənɛri/",
+    "pos": "adj.",
+    "trans": "可自由支配的",
+    "ex": "What people mean is an extra hour that is both discretionary — no boss, no family responsibilities."
+  },
+  {
+    "word": "fold",
+    "ph": "us: /foʊld/",
+    "pos": "vt.",
+    "trans": "將…融入",
+    "ex": "We just fold the day into our usual routines and fill it with the usual stuff."
+  },
+  {
+    "word": "ascertained",
+    "ph": "us: /ˌæsərˈteɪnd/",
+    "pos": "v.",
+    "trans": "確定，查明",
+    "ex": "As you have probably ascertained, looking at yourself and everyone around you, the answer is no."
+  },
+  {
+    "word": "scoring",
+    "ph": "us: /ˈskɔːrɪŋ/",
+    "pos": "v.",
+    "trans": "獲得，賺取（時間）",
+    "ex": "That is the equivalent of scoring an extra hour in the day for more than half of a month."
+  },
+  {
+    "word": "equivalent",
+    "ph": "us: /ɪˈkwɪvələnt/",
+    "pos": "adj.",
+    "trans": "等值的，相等的",
+    "ex": "That is the equivalent of scoring an extra hour in the day for more than half of a month."
+  },
+  {
+    "word": "wisdom",
+    "ph": "us: /ˈwɪz.dəm/",
+    "pos": "n.",
+    "trans": "智慧；知識與見解",
+    "ex": "After I pause to note this astronomical wisdom, I also have a different thought."
+  },
+  {
+    "word": "astronomical",
+    "ph": "us: /ˌæstrəˈnɑːmɪkl/",
+    "pos": "adj.",
+    "trans": "巨大的；天文學的",
+    "ex": "After I pause to note this astronomical wisdom, I also have a different thought."
+  },
+  {
+    "word": "whiling",
+    "ph": "us: /ˈwaɪlɪŋ/",
+    "pos": "v.",
+    "trans": "消磨，打發（時間）",
+    "ex": "We are going to wind up whiling away time on our little devices."
+  },
+  {
+    "word": "existences",
+    "ph": "us: /ɪɡˈzɪstənsɪz/",
+    "pos": "n.",
+    "trans": "生活，存在（複數）",
+    "ex": "There are some points in our ordinary daily existences when we wind up whiling away time."
+  },
+  {
+    "word": "ordinary",
+    "ph": "us: /ˈɔːrdəneri/",
+    "pos": "adj.",
+    "trans": "平凡的，普通的",
+    "ex": "There are some points in our ordinary daily existences when we wind up whiling away time."
+  },
+  {
+    "word": "mindless",
+    "ph": "us: /ˈmaɪndləs/",
+    "pos": "adj.",
+    "trans": "無意識的，漫無目的的",
+    "ex": "There are some points when we are going to be spending mindless time on our phones."
+  },
+  {
+    "word": "cleanse",
+    "ph": "us: /klɛnz/",
+    "pos": "v.",
+    "trans": "清潔，淨化",
+    "ex": "One that is meant to clean and cleanse your skin without over-stripping your skin."
+  },
+  {
+    "word": "meant",
+    "ph": "us: /mɛnt/",
+    "pos": "v.",
+    "trans": "意圖，旨在",
+    "ex": "One that is meant to clean and cleanse your skin without over-stripping your skin."
+  },
+  {
+    "word": "drugstore",
+    "ph": "us: /ˈdrʌɡˌstɔr/",
+    "pos": "n.",
+    "trans": "藥房，藥妝店",
+    "ex": "And this is one that you can find at any drugstore."
+  },
+  {
+    "word": "roll",
+    "ph": "us: /roʊl/",
+    "pos": "v.",
+    "trans": "順勢而為，應付困境",
+    "ex": "How do we roll with the punches?"
+  },
+  {
+    "word": "bandaid",
+    "ph": "us: /ˈbændeɪd/",
+    "pos": "n.",
+    "trans": "創可貼；治標不治本的方法",
+    "ex": "Skincare with the crappiest diet is not great — you're just putting a bandaid, right?"
+  },
+  {
+    "word": "crappiest",
+    "ph": "us: /ˈkræpiɪst/",
+    "pos": "adj.",
+    "trans": "最糟糕的，最差勁的",
+    "ex": "Skincare with the crappiest diet is not great. You're just putting a bandaid, right?"
+  },
+  {
+    "word": "topically",
+    "ph": "us: /ˈtɑːpɪkli/",
+    "pos": "adv.",
+    "trans": "局部地；外用地",
+    "ex": "Eating carrots to no end won't give the same impact as a retinol you're applying topically."
+  },
+  {
+    "word": "retinol",
+    "ph": "us: /ˈretɪˌnɔl/",
+    "pos": "n.",
+    "trans": "維生素A（護膚成分）",
+    "ex": "People eat carrots hoping to get the benefits of a retinol applied topically — it won't give the same impact."
+  },
+  {
+    "word": "compound",
+    "ph": "us: /ˈkɑːm.paʊnd/",
+    "pos": "adj.",
+    "trans": "複合的；複利的",
+    "ex": "Sleep is like compound interest."
+  },
+  {
+    "word": "misunderstood",
+    "ph": "us: /ˌmɪs.ʌn.dərˈstʊd/",
+    "pos": "adj.",
+    "trans": "被誤解的",
+    "ex": "The reason beauty sleep exists is for a reason, but I think it's misunderstood."
+  },
+  {
+    "word": "underspoken",
+    "ph": "us: /ˌʌndərˈspoʊkən/",
+    "pos": "adj.",
+    "trans": "未被充分提及的",
+    "ex": "The most important habits that I think are underspoken of right."
+  },
+  {
+    "word": "insecurities",
+    "ph": "us: /ˌɪnsɪˈkjʊrətiz/",
+    "pos": "n.",
+    "trans": "不安全感，缺乏自信",
+    "ex": "Find someone who's not going to feed off these insecurities or vulnerabilities."
+  },
+  {
+    "word": "rooted",
+    "ph": "us: /ˈruːtɪd/",
+    "pos": "adj.",
+    "trans": "根深蒂固的，深層的",
+    "ex": "More often than not, it's a much deeper rooted issue that you're trying to get to."
+  },
+  {
+    "word": "vulnerable",
+    "ph": "us: /ˈvʌlnərəbəl/",
+    "pos": "adj.",
+    "trans": "脆弱的，易受傷害的",
+    "ex": "That's where it's such a vulnerable state — you have to find someone you trust."
+  },
+  {
+    "word": "approval",
+    "ph": "us: /əˈpruː.vəl/",
+    "pos": "n.",
+    "trans": "贊同，認可",
+    "ex": "If you're always pursuing other people's approval of how you look, you're pursuing something that doesn't exist."
+  },
+  {
+    "word": "newsflash",
+    "ph": "us: /ˈnuːzˌflæʃ/",
+    "pos": "n.",
+    "trans": "突發新聞；提醒（帶諷刺意味）",
+    "ex": "I mean, newsflash, you've always looked like you."
+  },
+  {
+    "word": "cherry",
+    "ph": "us: /ˈtʃeri/",
+    "pos": "n.",
+    "trans": "錦上添花（比喻額外優勢）",
+    "ex": "Your confidence is not dependent on how you look, but it's the cherry on top."
+  },
+  {
+    "word": "consuming",
+    "ph": "us: /kənˈsuːmɪŋ/",
+    "pos": "v.",
+    "trans": "消耗；吞噬，支配",
+    "ex": "Caring enough to show up is fine — but it's not consuming who you are."
+  },
+  {
+    "word": "dose",
+    "ph": "us: /doʊs/",
+    "pos": "n.",
+    "trans": "一點，少量",
+    "ex": "A healthy dose of vanity is like caring enough to show up and wear an ironed shirt."
+  },
+  {
+    "word": "whereas",
+    "ph": "us: /ˌwerˈæz/",
+    "pos": "conj.",
+    "trans": "鑒於；而；反之",
+    "ex": "Whereas a healthy dose of vanity is like caring enough to wear an iron shirt instead of a wrinkled shirt."
+  },
+  {
+    "word": "nothingness",
+    "ph": "us: /ˈnʌθɪŋnəs/",
+    "pos": "n.",
+    "trans": "虛無，空虛",
+    "ex": "You are chasing a never-ending nothingness, because it's just not something that's achievable."
+  },
+  {
+    "word": "addiction",
+    "ph": "us: /əˈdɪkʃən/",
+    "pos": "n.",
+    "trans": "沉溺，成癮",
+    "ex": "Unhealthy vanity is when it constantly consumes your mental thoughts almost like an addiction."
+  },
+  {
+    "word": "subjective",
+    "ph": "us: /sʌbˈdʒɛktɪv/",
+    "pos": "adj.",
+    "trans": "主觀的",
+    "ex": "So I'm going to give you my subjective perspective."
+  },
+  {
+    "word": "extent",
+    "ph": "us: /ɪkˈstɛnt/",
+    "pos": "n.",
+    "trans": "程度；範圍",
+    "ex": "Being vain to a healthy and certain extent is just a reflection that you still care."
+  },
+  {
+    "word": "screwed",
+    "ph": "us: /skruːd/",
+    "pos": "adj.",
+    "trans": "倒霉的，完蛋的",
+    "ex": "I sat out for decades in the sun and now I'm screwed."
+  },
+  {
+    "word": "afterthought",
+    "ph": "us: /ˈæftərˌθɔːt/",
+    "pos": "n.",
+    "trans": "事後才想起的事；不重要的附加物",
+    "ex": "And yet it's an afterthought for so many."
+  },
+  {
+    "word": "hormonal",
+    "ph": "us: /hɔːrˈmoʊnl/",
+    "pos": "adj.",
+    "trans": "荷爾蒙的",
+    "ex": "They're going through all kinds of hormonal changes and hear that your skin reflects what's going on inside."
+  },
+  {
+    "word": "phase",
+    "ph": "us: /feɪz/",
+    "pos": "n.",
+    "trans": "階段，時期",
+    "ex": "The person is in a phase of their life where they're going through all kinds of hormonal changes."
+  },
+  {
+    "word": "fascinating",
+    "ph": "us: /ˈfæsɪˌneɪtɪŋ/",
+    "pos": "adj.",
+    "trans": "令人著迷的，極有趣的",
+    "ex": "It's really something that I find fascinating because it's so visible."
+  },
+  {
+    "word": "ringer",
+    "ph": "us: /ˈrɪŋər/",
+    "pos": "n.",
+    "trans": "嚴厲的考驗；折磨",
+    "ex": "And yet I put it through the ringer and I don't even care for it."
+  },
+  {
+    "word": "vanity",
+    "ph": "us: /ˈvænəti/",
+    "pos": "n.",
+    "trans": "虛榮，虛妄",
+    "ex": "And skin is not just vanity."
+  },
+  {
+    "word": "overlooked",
+    "ph": "us: /ˌoʊvərˈlʊkt/",
+    "pos": "adj.",
+    "trans": "被忽略的，被忽視的",
+    "ex": "One thing often so overlooked when it comes to skin health is the mental and emotional impact."
+  },
+  {
+    "word": "standpoint",
+    "ph": "us: /ˈstændˌpɔɪnt/",
+    "pos": "n.",
+    "trans": "觀點，立場",
+    "ex": "Not just internally from a physiologic standpoint, but also mentally and emotionally."
+  },
+  {
+    "word": "physiologic",
+    "ph": "us: /ˌfɪziəˈlɑːdʒɪk/",
+    "pos": "adj.",
+    "trans": "生理（學）的",
+    "ex": "Not just internally from a physiologic standpoint, but also on the inside, mentally and emotionally."
+  },
+  {
+    "word": "reveal",
+    "ph": "us: /rɪˈviːl/",
+    "pos": "v.",
+    "trans": "揭示，透露",
+    "ex": "What does the state of your skin reveal about what's going on inside your body?"
+  },
+  {
+    "word": "cumulative",
+    "ph": "us: /ˈkjuːmjələtɪv/",
+    "pos": "adj.",
+    "trans": "累積的",
+    "ex": "So 80% has to do with cumulative sun exposure."
+  },
+  {
+    "word": "genetics",
+    "ph": "us: /dʒəˈnetɪks/",
+    "pos": "n.",
+    "trans": "遺傳因素；遺傳學",
+    "ex": "If it was all purely genetics, habits wouldn't matter."
+  },
+  {
+    "word": "doable",
+    "ph": "us: /ˈduːəbəl/",
+    "pos": "adj.",
+    "trans": "可行的，能做到的",
+    "ex": "Making the complicated stuff simple and doable."
+  },
+  {
+    "word": "misinformation",
+    "ph": "us: /ˌmɪsɪnfərˈmeɪʃən/",
+    "pos": "n.",
+    "trans": "錯誤信息，不實信息",
+    "ex": "Millions of followers trust her for calling out the misinformation."
+  },
+  {
+    "word": "replenish",
+    "ph": "us: /rɪˈplenɪʃ/",
+    "pos": "v.",
+    "trans": "補充，恢復",
+    "ex": "People think collagen on a moisturizer will help replenish their collagen, but it's just a hydrating moisturizer."
+  },
+  {
+    "word": "scrolling",
+    "ph": "us: /ˈskroʊlɪŋ/",
+    "pos": "v.",
+    "trans": "滑動瀏覽",
+    "ex": "The other day I was scrolling through social media and I'm not even kidding you."
+  },
+  {
+    "word": "overwhelmed",
+    "ph": "us: /ˌoʊvərˈwɛlmd/",
+    "pos": "adj.",
+    "trans": "感到不知所措",
+    "ex": "I feel so overwhelmed about what to do, the way my skin is sagging, what products to buy."
+  },
+  {
+    "word": "blossom",
+    "ph": "us: /ˈblɑːsəm/",
+    "pos": "v.",
+    "trans": "綻放，發展成更好的狀態",
+    "ex": "We can transform from an inside out perspective and really blossom into the butterflies that we are."
+  },
+  {
+    "word": "irrational",
+    "ph": "us: /ɪˈræʃənəl/",
+    "pos": "adj.",
+    "trans": "不理性的，無理性的",
+    "ex": "She pointed out to me that this was an irrational pet peeve."
+  },
+  {
+    "word": "accomplished",
+    "ph": "us: /əˈkɑːmplɪʃt/",
+    "pos": "adj.",
+    "trans": "有成就的，有造詣的",
+    "ex": "You've either got to choose a relaxing life or an accomplished one — I'm on a mission to prove that's not how it works."
+  },
+  {
+    "word": "claim",
+    "ph": "us: /klem/",
+    "pos": "v.",
+    "trans": "聲稱，斷言",
+    "ex": "I'm not going to claim to be the best in the world at anything."
+  },
+  {
+    "word": "fascinated",
+    "ph": "us: /ˈfæsɪˌneɪtɪd/",
+    "pos": "adj.",
+    "trans": "被 ... 深深吸引；對 ... 著迷 ( 在這句話中指：我對人類經驗的多樣性以及我們如何度過時間",
+    "ex": ""
+  },
+  {
+    "word": "tight-knit",
+    "ph": "us: /ˈtaɪtˈnɪt/",
+    "pos": "adj.",
+    "trans": "關係緊密的，聯繫緊密的",
+    "ex": "If the person tells you that the best part of growing up in Dallas was the tight-knit"
+  },
+  {
+    "word": "pushy",
+    "ph": "us: /ˈpʊʃi/",
+    "pos": "adj.",
+    "trans": "咄咄逼人的，過於強求的",
+    "ex": "As Dweck says in Super Communicators, none of these deeper questions are incredibly"
+  },
+  {
+    "word": "incredibly",
+    "ph": "us: /ɪnˈkredɪbli/",
+    "pos": "adv.",
+    "trans": "非常，極其",
+    "ex": "As Dweck says in Super Communicators, none of these deeper questions are incredibly"
+  },
+  {
+    "word": "open-ended",
+    "ph": "us: /ˌoʊpən ˈendɪd/",
+    "pos": "adj.",
+    "trans": "开放式的，沒有固定答案的",
+    "ex": ""
+  },
+  {
+    "word": "racking",
+    "ph": "us: /ˈrækɪŋ/",
+    "pos": "v.",
+    "trans": "絞盡腦汁",
+    "ex": ""
+  },
+  {
+    "word": "tedious",
+    "ph": "us: /ˈtiːdiəs/",
+    "pos": "adj.",
+    "trans": "乏味的，單調的",
+    "ex": "And doing so can feel tedious."
+  },
+  {
+    "word": "forge",
+    "ph": "us: /fɔːrdʒ/",
+    "pos": "vt.",
+    "trans": "建立，創造",
+    "ex": ""
+  },
+  {
+    "word": "straightforward",
+    "ph": "us: /ˌstreɪtˈfɔːrwərd/",
+    "pos": "adj.",
+    "trans": "簡單明瞭的，坦率的",
+    "ex": "Duhigg notes that many of us ask pretty straightforward questions when we are"
+  },
+  {
+    "word": "shallow",
+    "ph": "us: /ˈʃæloʊ/",
+    "pos": "adj.",
+    "trans": "膚淺的，不深刻的",
+    "ex": "Today's tip is to make shallow questions deeper."
+  },
+  {
+    "word": "inevitably",
+    "ph": "us: /ɪˈnevɪtəbli/",
+    "pos": "adv.",
+    "trans": "不可避免地，必然地",
+    "ex": "And then to people feeling like work and family or work and relationships are"
+  },
+  {
+    "word": "dire",
+    "ph": "us: /ˈdaɪər/",
+    "pos": "adj.",
+    "trans": "極其嚴重的；危急的",
+    "ex": "Or you can wait until things become more dire and use whatever time is right there,"
+  },
+  {
+    "word": "disruptive",
+    "ph": "us: /dɪsˈrʌptɪv/",
+    "pos": "adj.",
+    "trans": "擾亂性的，造成混亂的",
+    "ex": "It was the least disruptive spillover spot."
+  },
+  {
+    "word": "tend",
+    "ph": "us: /tend/",
+    "pos": "v.",
+    "trans": "傾向於，往往會",
+    "ex": "I tend not to do much work in the evenings, but I was in a hotel room and I had"
+  },
+  {
+    "word": "session",
+    "ph": "us: /ˈseʃən/",
+    "pos": "n.",
+    "trans": "一段時間，集會，會議。 在這句話中指： 一個持續數小時的工作時段 /",
+    "ex": ""
+  },
+  {
+    "word": "multi-hour",
+    "ph": "us: /ˈmʌltiˌaʊər/",
+    "pos": "adj.",
+    "trans": "持續數小時的",
+    "ex": "So during a recent week, I wound up doing a multi-hour work session on a Thursday"
+  },
+  {
+    "word": "displace",
+    "ph": "us: /dɪsˈpleɪs/",
+    "pos": "v.",
+    "trans": "取代，排擠",
+    "ex": "You can also make sure that the extra work doesn't displace important personal"
+  },
+  {
+    "word": "slots",
+    "ph": "us: /slɑːts/",
+    "pos": "n.",
+    "trans": "時間段，空檔",
+    "ex": "When that is the case, choosing ahead of time which extra slots would work best can"
+  },
+  {
+    "word": "ahead",
+    "ph": "us: /əˈhɛd/",
+    "pos": "adv.",
+    "trans": "提前，預先",
+    "ex": ""
+  },
+  {
+    "word": "ListenLeap",
+    "ph": "",
+    "pos": "adj.",
+    "trans": "無法使用的，不能用的",
+    "ex": "You can keep track of things that could or should happen in the future without making"
+  },
+  {
+    "word": "Solar",
+    "ph": "us: /ˈsoʊlər/",
+    "pos": "adj.",
+    "trans": "太陽的；這裡指「個人興趣」",
+    "ex": "Trade off a Saturday each month with your partner, so each of you gets a full day for"
+  },
+  {
+    "word": "ListenLeap",
+    "ph": "",
+    "pos": "adj.",
+    "trans": "巨大的；天文學的",
+    "ex": "After I pause to note this astronomical wisdom, I also have a different thought, which"
+  },
+  {
+    "word": "ListenLeap",
+    "ph": "",
+    "pos": "v.",
+    "trans": "意圖，旨在",
+    "ex": "One that is meant to clean and cleanse your skin without over-stripping your skin."
+  },
+  {
+    "word": "mental",
+    "ph": "us: /ˈmɛntl/",
+    "pos": "adj.",
+    "trans": "精神的；心理的",
+    "ex": "So I think one thing that is often so overlooked when it comes to skin health is that"
+  },
+  {
+    "word": "world-class",
+    "ph": "us: /ˈwɜrldˌklæs/",
+    "pos": "adj.",
+    "trans": "世界一流的，頂尖的",
+    "ex": "I know that we are in for something that is going to be world-class."
+  },
+  {
+    "word": "ado",
+    "ph": "us: /əˈduː/",
+    "pos": "n.",
+    "trans": "騷擾；忙亂；麻煩。 在這句話中， ado 指的是「騷擾、忙亂」， without further ado 意為",
+    "ex": ""
+  },
+  {
+    "word": "instructor",
+    "ph": "us: /ɪnˈstrʌktər/",
+    "pos": "n.",
+    "trans": "講師",
+    "ex": "She's been a clinical assistant professor at NYU and is currently a clinical instructor at"
+  },
+  {
+    "word": "world-renowned",
+    "ph": "us: /ˌwɜːrld rɪˈnaʊnd/",
+    "pos": "adj.",
+    "trans": "世界聞名的，在世界上享有盛譽的",
+    "ex": "Dr Idris is a world-renowned board-certified dermatologist with 17 years of clinical"
+  },
+  {
+    "word": "drawers",
+    "ph": "us: /ˈdrɔrz/",
+    "pos": "n.",
+    "trans": "抽屜",
+    "ex": "So, whether you're dealing with acne, aging skin, or you're just overwhelmed and you"
+  },
+  {
+    "word": "clogging",
+    "ph": "us: /ˈklɑːɡɪŋ/",
+    "pos": "v.",
+    "trans": "堵塞，阻塞",
+    "ex": "So, whether you're dealing with acne, aging skin, or you're just overwhelmed and you"
+  },
+  {
+    "word": "sagging",
+    "ph": "us: /ˈsæɡɪŋ/",
+    "pos": "adj.",
+    "trans": "下垂的",
+    "ex": "How do you get rid of sagging jowls?"
+  },
+  {
+    "word": "acne",
+    "ph": "us: /ˈækni/",
+    "pos": "n.",
+    "trans": "痤瘡，青春痘",
+    "ex": "Questions like, what do you do about adult acne?"
+  },
+  {
+    "word": "sagging",
+    "ph": "us: /ˈsæɡɪŋ/",
+    "pos": "v.",
+    "trans": "下垂，鬆弛",
+    "ex": "I feel so overwhelmed about what to do, the way my skin is sagging, what products to"
+  },
+  {
+    "word": "glow",
+    "ph": "us: /ɡloʊ/",
+    "pos": "v.",
+    "trans": "容光煥發，散發光彩",
+    "ex": ""
+  },
+  {
+    "word": "aging",
+    "ph": "us: /ˈeɪdʒɪŋ/",
+    "pos": "adj.",
+    "trans": "抗衰老的，減緩衰老的",
+    "ex": "Within three minutes, I saw 17 different skincare products being marketed to me red"
+  },
+  {
+    "word": "anti-aging",
+    "ph": "us: /ˌæntiˈeɪdʒɪŋ/",
+    "pos": "adj.",
+    "trans": "抗衰老",
+    "ex": "Within three minutes, I saw 17 different skincare products being marketed to me red"
+  },
+  {
+    "word": "therapy",
+    "ph": "us: /ˈθerəpi/",
+    "pos": "n.",
+    "trans": "療法",
+    "ex": ""
+  },
+  {
+    "word": "perspective",
+    "ph": "us: /pərˈspek.tɪv/",
+    "pos": "n.",
+    "trans": "觀點，角度",
+    "ex": "And so if we can create the system so we can show up for ourselves every single day"
+  },
+  {
+    "word": "dermatologists",
+    "ph": "us: /ˌdɜːrməˈtɑːlədʒɪst/",
+    "pos": "n.",
+    "trans": "皮膚科醫生",
+    "ex": "Today, Dr Shireen Idris, one of the most trusted board-certified dermatologists in the"
+  },
+  {
+    "word": "collapse",
+    "ph": "us: /kəˈlæps/",
+    "pos": "v.",
+    "trans": "開始有點崩潰",
+    "ex": ""
+  },
+  {
+    "word": "dramatic",
+    "ph": "us: /drəˈmætɪk/",
+    "pos": "adj.",
+    "trans": "戲劇性的，引人注目的",
+    "ex": "And I think the most dramatic one is truly how you feel about yourself."
+  },
+  {
+    "word": "clinical",
+    "ph": "us: /ˈklɪnɪkəl/",
+    "pos": "adj.",
+    "trans": "臨床的；在這裡指的是在醫院或診所實際操作、教學的。臨床助理教授；臨床講師",
+    "ex": "She's been a clinical assistant professor at NYU and is currently a clinical instructor at"
+  },
+  {
+    "word": "vouch",
+    "ph": "us: /vaʊtʃ/",
+    "pos": "verb",
+    "trans": "擔保，證明",
+    "ex": "I can vouch for the volume of your complaints about that."
+  }
+];
+
+let idx = 0, mode = 'all';
+let known = new Set(), review = new Set();
+let saveTimer = null;
+let pendingImport = [];
+
+// ── Toast ──────────────────────────────────────────
+function showToast(msg, duration=2200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ── Sync status ────────────────────────────────────
+function setSyncStatus(s, msg) {
+  document.getElementById('sync-dot').className = 'sync-dot ' + s;
+  document.getElementById('sync-label').textContent =
+    msg || {ok:'已同步',saving:'儲存中',error:'同步失敗'}[s] || '連線中';
+}
+
+// ── Load progress from Sheets ──────────────────────
+async function loadProgress() {
+  setSyncStatus('', '連線中');
+  try {
+    const res = await fetch(GAS_URL);
+    const data = await res.json();
+    if (data.success) {
+      known = new Set(data.known || []);
+      review = new Set(data.review || []);
+      setSyncStatus('ok');
+    } else { setSyncStatus('error'); }
+  } catch(e) { setSyncStatus('error', '離線模式'); }
+
+  // Restore last position
+  try {
+    const saved = localStorage.getItem(POS_KEY);
+    if (saved) {
+      const p = JSON.parse(saved);
+      mode = p.mode || 'all';
+      idx  = p.idx  || 0;
+      ['all','review','known'].forEach(x =>
+        document.getElementById('m-'+x).classList.toggle('active', x===mode));
+    }
+  } catch(e) {}
+  render();
+}
+
+// ── Save progress to Sheets ────────────────────────
+async function saveProgress() {
+  setSyncStatus('saving');
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'save', known:[...known], review:[...review] }),
+      headers: {'Content-Type':'text/plain'}
+    });
+    const data = await res.json();
+    setSyncStatus(data.success ? 'ok' : 'error');
+  } catch(e) { setSyncStatus('error', '同步失敗'); }
+}
+
+async function logAction(word, status) {
+  try {
+    fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'log', word, status, action_type: status }),
+      headers: {'Content-Type':'text/plain'}
+    });
+  } catch(e) {}
+}
+
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveProgress, 1000);
+}
+
+// ── Save position to localStorage ─────────────────
+function savePosition() {
+  try { localStorage.setItem(POS_KEY, JSON.stringify({mode, idx})); } catch(e) {}
+}
+
+// ── Deck helpers ───────────────────────────────────
+function getActiveDeck() {
+  if (mode === 'review') return ALL_CARDS.filter(c => review.has(c.word));
+  if (mode === 'known')  return ALL_CARDS.filter(c => known.has(c.word));
+  return ALL_CARDS;
+}
+
+// ── Render ─────────────────────────────────────────
+function render() {
+  const d = getActiveDeck();
+  if (!d.length) {
+    document.getElementById('main-area').style.display = 'none';
+    document.getElementById('done-screen').style.display = 'block';
+    document.getElementById('done-msg').textContent =
+      `已熟記 ${known.size} 個 · 需複習 ${review.size} 個 · 未標記 ${ALL_CARDS.length - known.size - review.size} 個`;
+    updateBtns(); return;
+  }
+  document.getElementById('main-area').style.display = 'block';
+  document.getElementById('done-screen').style.display = 'none';
+  if (idx >= d.length) idx = 0;
+  const c = d[idx];
+  document.getElementById('word').textContent = c.word;
+  document.getElementById('phonetic').textContent = c.ph || '';
+  document.getElementById('pos').textContent = c.pos || '';
+  document.getElementById('trans').textContent = c.trans;
+  document.getElementById('ex').textContent = c.ex || '';
+  document.getElementById('card').classList.remove('flipped');
+  document.getElementById('counter').textContent = `${idx+1} / ${d.length}`;
+  document.getElementById('bar').style.width = `${((idx+1)/d.length)*100}%`;
+  document.getElementById('s-total').textContent = ALL_CARDS.length;
+  document.getElementById('s-known').textContent = known.size;
+  document.getElementById('s-review').textContent = review.size;
+  updateBtns();
+  savePosition();
+}
+
+function updateBtns() {
+  document.getElementById('m-all').textContent    = `全部 (${ALL_CARDS.length})`;
+  document.getElementById('m-review').textContent = `再複習 (${review.size})`;
+  document.getElementById('m-known').textContent  = `已熟記 (${known.size})`;
+}
+
+// ── Card interactions ──────────────────────────────
+document.getElementById('scene').addEventListener('click', () => {
+  document.getElementById('card').classList.toggle('flipped');
+});
+
+function speak(type) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const d = getActiveDeck();
+  if (!d.length) return;
+  const c = d[idx];
+  const u = new SpeechSynthesisUtterance(
+    type==='trans' ? c.trans : type==='ex' ? c.ex : c.word);
+  u.lang = type==='trans' ? 'zh-TW' : 'en-US';
+  u.rate = 0.9;
+  window.speechSynthesis.speak(u);
+}
+
+function markCard(isKnown) {
+  const d = getActiveDeck();
+  const c = d[idx];
+  if (isKnown) { known.add(c.word); review.delete(c.word); }
+  else         { review.add(c.word); known.delete(c.word); }
+  logAction(c.word, isKnown ? '已熟記' : '需複習');
+  scheduleSave();
+  if (idx < d.length - 1) idx++;
+  render();
+}
+
+function nextCard() { const d=getActiveDeck(); if(idx<d.length-1){idx++;render();} }
+function prevCard() { if(idx>0){idx--;render();} }
+function setMode(m) {
+  mode=m; idx=0;
+  ['all','review','known'].forEach(x =>
+    document.getElementById('m-'+x).classList.toggle('active',x===m));
+  render();
+}
+function restart() { known.clear(); review.clear(); idx=0; scheduleSave(); setMode('all'); }
+
+// ── PDF Import ─────────────────────────────────────
+function openImport() {
+  pendingImport = [];
+  document.getElementById('import-status').textContent = '';
+  document.getElementById('import-preview').style.display = 'none';
+  document.getElementById('import-preview').innerHTML = '';
+  document.getElementById('import-confirm-btn').disabled = true;
+  document.getElementById('pdf-input').value = '';
+  document.getElementById('import-modal').classList.add('show');
+}
+function closeImport() {
+  document.getElementById('import-modal').classList.remove('show');
+}
+
+// Drag and drop
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type === 'application/pdf') handlePDFFile(f);
+});
+
+async function handlePDFFile(file) {
+  if (!file) return;
+  const status = document.getElementById('import-status');
+  status.textContent = '解析中，請稍候...';
+  document.getElementById('import-confirm-btn').disabled = true;
+  document.getElementById('import-preview').style.display = 'none';
+
+  try {
+    const ab = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data: ab}).promise;
+    let lines = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      // Group text items by their Y position to reconstruct lines
+      const byY = {};
+      for (const item of content.items) {
+        if (!item.str.trim()) continue;
+        const y = Math.round(item.transform[5]);
+        if (!byY[y]) byY[y] = [];
+        byY[y].push({ x: item.transform[4], str: item.str });
+      }
+      // Sort by Y descending (top of page first), then X
+      const ys = Object.keys(byY).map(Number).sort((a,b) => b - a);
+      for (const y of ys) {
+        const row = byY[y].sort((a,b) => a.x - b.x).map(t => t.str).join(' ').trim();
+        if (row) lines.push(row);
+      }
+    }
+    parsePDFText(lines);
+  } catch(e) {
+    status.textContent = '❌ 解析失敗，請確認是可選取文字的 PDF';
+    console.error(e);
+  }
+}
+
+function parsePDFText(lines) {
+  const existingWords = new Set(ALL_CARDS.map(c => c.word.toLowerCase()));
+  const parsed = [];
+
+  // ListenLeap format:
+  // WORD (possibly hyphenated)
+  // us: /.../  uk: /.../
+  // pos. Chinese translation (optional: parenthetical note)
+  // English example sentence
+  const wordRegex = /^([a-zA-Z][a-zA-Z\-']+)$/;
+  const phoneticRegex = /us:\s*\/[^/]+\//;
+  const posRegex = /^(n\.|v\.|vt\.|vi\.|adj\.|adv\.|conj\.|prep\.|pron\.|interj\.|verb|ph\.)\s+(.*)/;
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i].trim();
+
+    if (wordRegex.test(line) && line.length >= 2 && line.length <= 35) {
+      const word = line;
+      let ph = '', pos = '', trans = '', ex = '';
+
+      // Look ahead for phonetic line (contains us: /.../)
+      if (i+1 < lines.length && phoneticRegex.test(lines[i+1])) {
+        ph = lines[i+1].match(/(us:\s*\/[^/]+\/)/)?.[1] || '';
+        i++;
+      }
+
+      // Skip duplicate pos lines (same content repeated)
+      // Look ahead for pos + translation
+      if (i+1 < lines.length) {
+        const nextLine = lines[i+1].trim();
+        const posMatch = nextLine.match(posRegex);
+        if (posMatch) {
+          pos = posMatch[1];
+          // Clean translation: remove parenthetical notes in Chinese
+          trans = posMatch[2]
+            .replace(/\s*[（(][^）)]{0,80}[）)]/g, '')  // remove (note) and （note）
+            .replace(/\*\*/g, '')
+            .trim();
+          i++;
+          // If there's a duplicate identical pos line right after, skip it
+          if (i+1 < lines.length && lines[i+1].trim() === lines[i].trim()) i++;
+        }
+      }
+
+      // Look ahead for English example sentence
+      if (i+1 < lines.length) {
+        const nextLine = lines[i+1].trim();
+        const hasEnglish = /[a-zA-Z]/.test(nextLine);
+        const wordCount = nextLine.split(/\s+/).length;
+        const notPhonetic = !phoneticRegex.test(nextLine);
+        const notPos = !posRegex.test(nextLine);
+        const notWordOnly = !wordRegex.test(nextLine);
+        if (hasEnglish && wordCount >= 4 && notPhonetic && notPos && notWordOnly) {
+          ex = nextLine;
+          i++;
+        }
+      }
+
+      if (word && trans) {
+        parsed.push({ word, ph, pos, trans, ex });
+      }
+    }
+    i++;
+  }
+
+  // Filter duplicates
+  const newCards = parsed.filter(c => !existingWords.has(c.word.toLowerCase()));
+  const dupCards = parsed.filter(c => existingWords.has(c.word.toLowerCase()));
+
+  pendingImport = newCards;
+
+  const status = document.getElementById('import-status');
+  const preview = document.getElementById('import-preview');
+
+  if (parsed.length === 0) {
+    status.textContent = '⚠️ 未能解析到單字，請確認 PDF 格式正確';
+    return;
+  }
+
+  status.textContent = `找到 ${parsed.length} 個單字：${newCards.length} 個新單字，${dupCards.length} 個重複（略過）`;
+
+  let html = '';
+  newCards.forEach(c => {
+    html += `<div><span class="new-word">＋ ${c.word}</span> — ${c.trans}</div>`;
+  });
+  dupCards.forEach(c => {
+    html += `<div><span class="dup-word">${c.word}</span> — 已存在</div>`;
+  });
+  preview.innerHTML = html;
+  preview.style.display = 'block';
+
+  document.getElementById('import-confirm-btn').disabled = newCards.length === 0;
+}
+
+// ── Settings ────────────────────────────────────────
+const GH_KEY = 'gh_settings_v1';
+
+function openSettings() {
+  const s = loadGHSettings();
+  document.getElementById('gh-user').value  = s.user  || '';
+  document.getElementById('gh-repo').value  = s.repo  || '';
+  document.getElementById('gh-path').value  = s.path  || 'index.html';
+  document.getElementById('gh-token').value = s.token || '';
+  document.getElementById('settings-modal').classList.add('show');
+}
+function closeSettings() {
+  document.getElementById('settings-modal').classList.remove('show');
+}
+function saveSettings() {
+  const s = {
+    user:  document.getElementById('gh-user').value.trim(),
+    repo:  document.getElementById('gh-repo').value.trim(),
+    path:  document.getElementById('gh-path').value.trim() || 'index.html',
+    token: document.getElementById('gh-token').value.trim()
+  };
+  try { localStorage.setItem(GH_KEY, JSON.stringify(s)); } catch(e) {}
+  closeSettings();
+  showToast('✅ 設定已儲存！');
+}
+function loadGHSettings() {
+  try { return JSON.parse(localStorage.getItem(GH_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+// ── Save HTML (download fallback) ──────────────────
+function buildUpdatedHTML() {
+  const cardsJSON = JSON.stringify(ALL_CARDS, null, 2);
+  const source = document.documentElement.outerHTML;
+  return source.replace(
+    /let ALL_CARDS = \[[\s\S]*?\];/,
+    `let ALL_CARDS = ${cardsJSON};`
+  );
+}
+
+function saveAsHTML() {
+  const updated = buildUpdatedHTML();
+  const blob = new Blob([updated], {type: 'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'index.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('⬇ 已下載 index.html！');
+}
+
+// ── Push to GitHub ─────────────────────────────────
+async function pushToGitHub() {
+  const s = loadGHSettings();
+  if (!s.token || !s.user || !s.repo) {
+    showToast('⚙ 請先設定 GitHub Token！', 3000);
+    openSettings();
+    return;
+  }
+
+  setSyncStatus('saving', '推送中');
+  showToast('☁ 正在推送到 GitHub…', 60000);
+
+  const content = buildUpdatedHTML();
+  const base64 = btoa(unescape(encodeURIComponent(content)));
+  const apiURL = `https://api.github.com/repos/${s.user}/${s.repo}/contents/${s.path}`;
+
+  try {
+    // Get current SHA
+    let sha = null;
+    const getRes = await fetch(apiURL, {
+      headers: {
+        'Authorization': `Bearer ${s.token}`,
+        'Accept': 'application/vnd.github+json'
+      }
+    });
+    if (getRes.ok) {
+      const info = await getRes.json();
+      sha = info.sha;
+    }
+
+    // Push
+    const body = {
+      message: `更新單字卡 ${new Date().toLocaleString('zh-TW')}（共 ${ALL_CARDS.length} 個單字）`,
+      content: base64,
+      ...(sha ? { sha } : {})
+    };
+
+    const putRes = await fetch(apiURL, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${s.token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    // Clear previous toast
+    document.getElementById('toast').classList.remove('show');
+
+    if (putRes.ok) {
+      setSyncStatus('ok', '已同步');
+      showToast(`✅ 已推送到 GitHub！（${ALL_CARDS.length} 個單字）`);
+    } else {
+      const err = await putRes.json();
+      setSyncStatus('error', '推送失敗');
+      showToast('❌ 推送失敗：' + (err.message || putRes.status), 4000);
+    }
+  } catch(e) {
+    document.getElementById('toast').classList.remove('show');
+    setSyncStatus('error', '推送失敗');
+    showToast('❌ 網路錯誤：' + e.message, 4000);
+  }
+}
+
+// ── confirmImport with auto-push option ────────────
+function confirmImport() {
+  if (!pendingImport.length) return;
+  ALL_CARDS = [...ALL_CARDS, ...pendingImport];
+  const count = pendingImport.length;
+  closeImport();
+  pendingImport = [];
+  render();
+  showToast(`✅ 已新增 ${count} 個單字！`);
+  // Auto-push if GitHub is configured
+  const s = loadGHSettings();
+  if (s.token && s.user && s.repo) {
+    setTimeout(() => pushToGitHub(), 1200);
+  }
+}
+
+// ── Init ───────────────────────────────────────────
+loadProgress();
+</script>
+
+
+</body></html>
