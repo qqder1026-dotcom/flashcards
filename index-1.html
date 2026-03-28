@@ -212,18 +212,18 @@
   <div class="mode-bar">
     <button class="mode-btn active" onclick="setMode('all')" id="m-all">全部 (115)</button>
     <button class="mode-btn" onclick="setMode('review')" id="m-review">再複習 (0)</button>
-    <button class="mode-btn" onclick="setMode('known')" id="m-known">已熟記 (0)</button>
+    <button class="mode-btn" onclick="setMode('known')" id="m-known">已熟記 (5)</button>
   </div>
 
   <div class="stats-row">
     <div class="stat"><div class="stat-num" id="s-total">115</div><div class="stat-label">總計</div></div>
-    <div class="stat"><div class="stat-num green" id="s-known">0</div><div class="stat-label">已熟記</div></div>
+    <div class="stat"><div class="stat-num green" id="s-known">5</div><div class="stat-label">已熟記</div></div>
     <div class="stat"><div class="stat-num red" id="s-review">0</div><div class="stat-label">需複習</div></div>
   </div>
 
   <div class="progress-wrap">
-    <div class="progress-bar"><div class="progress-fill" id="bar" style="width: 25.2174%;"></div></div>
-    <div class="counter-row"><span class="counter" id="counter">29 / 115</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="bar" style="width: 31.3043%;"></div></div>
+    <div class="counter-row"><span class="counter" id="counter">36 / 115</span></div>
   </div>
 
   <div id="main-area" style="display: block;">
@@ -231,26 +231,26 @@
       <div class="card" id="card">
         <div class="face front">
           <div class="word-row">
-            <div class="word-text" id="word">drugstore</div>
+            <div class="word-text" id="word">misunderstood</div>
             <button class="speak-btn" onclick="event.stopPropagation();speak('word')">
               <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"></path></svg>
             </button>
           </div>
-          <div class="phonetic" id="phonetic">us: /ˈdrʌɡˌstɔr/</div>
-          <div class="pos-badge" id="pos">n.</div>
+          <div class="phonetic" id="phonetic">us: /ˌmɪs.ʌn.dərˈstʊd/</div>
+          <div class="pos-badge" id="pos">adj.</div>
           <div class="flip-hint">點擊卡片翻面查看翻譯</div>
         </div>
         <div class="face back">
           <div class="back-inner">
             <div class="trans-row">
-              <div class="translation" id="trans">藥房，藥妝店</div>
+              <div class="translation" id="trans">被誤解的</div>
               <button class="speak-btn" onclick="event.stopPropagation();speak('trans')">
                 <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"></path></svg>
               </button>
             </div>
             <div class="divider"></div>
             <div class="ex-row">
-              <div class="example-sentence" id="ex">And this is one that you can find at any drugstore.</div>
+              <div class="example-sentence" id="ex">The reason beauty sleep exists is for a reason, but I think it's misunderstood.</div>
               <button class="speak-btn" onclick="event.stopPropagation();speak('ex')">
                 <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"></path></svg>
               </button>
