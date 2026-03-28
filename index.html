@@ -728,8 +728,6 @@ function parsePDFText(lines) {
   document.getElementById('import-confirm-btn').disabled = newCards.length === 0;
 }
 
-}
-
 // ── Save HTML (download fallback) ──────────────────
 function buildUpdatedHTML() {
   const cardsJSON = JSON.stringify(ALL_CARDS, null, 2);
